@@ -1,0 +1,18 @@
+{
+  // Next.js App Router app. Next owns emit, so this config is type-check only. Unlike the
+  // other workspaces, `@/` maps to the app root because the folders (components/, hooks/,
+  // lib/) sit beside app/ rather than under src/, matching CLAUDE.md.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "lib": ["DOM", "DOM.Iterable", "ES2023"],
+    "jsx": "preserve",
+    "allowJs": true,
+    "noEmit": true,
+    "incremental": true,
+    "plugins": [{ "name": "next" }],
+    "baseUrl": ".",
+    "paths": { "@/*": ["./*"] }
+  },
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+  "exclude": ["node_modules"]
+}

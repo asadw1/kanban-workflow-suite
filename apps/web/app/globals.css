@@ -1,0 +1,5 @@
+/*
+ * Global styles for the web app. Tailwind CSS v4 is configured in CSS; shadcn/ui theme
+ * tokens are appended here by `pnpm dlx shadcn@latest add <component>`.
+ */
+@import "tailwindcss";
