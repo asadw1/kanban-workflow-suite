@@ -79,7 +79,7 @@ The platform is a Next.js frontend backed by a dedicated Node.js API and Socket.
 ### Backend & Real-Time
 
 - **Runtime:** Node.js (v20+)
-- **API Framework:** Fastify or Express
+- **API Framework:** Fastify
 - **Real-Time Layer:** Socket.io (with `@socket.io/redis-adapter`)
 - **Job Processing:** BullMQ
 - **ORM & Database:** Prisma ORM, PostgreSQL (v15+)

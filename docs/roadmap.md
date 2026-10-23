@@ -71,32 +71,32 @@ These apply to all items below and are part of each stage's definition of done:
 **Goal:** A working database, authenticated API, and the application shell.
 
 ### Tooling and workspace setup
-- [ ] Add TypeScript base config (`strict: true`) and per-package `tsconfig` files with `@/` aliases
-- [ ] Configure ESLint and Prettier across the monorepo
-- [ ] Wire `dev`, `build`, `lint`, and `test` scripts in each workspace so Turborepo can run them
-- [ ] Choose and configure the unit test runner
-- [ ] Add startup environment validation with Zod (fail fast on bad config)
+- [x] Add TypeScript base config (`strict: true`) and per-package `tsconfig` files with `@/` aliases
+- [x] Configure ESLint and Prettier across the monorepo
+- [x] Wire `dev`, `build`, `lint`, and `test` scripts in each workspace so Turborepo can run them
+- [x] Choose and configure the unit test runner (Vitest)
+- [x] Add startup environment validation with Zod (fail fast on bad config)
 
 ### Database
-- [ ] Add Prisma and the generated client to `packages/database`
-- [ ] Add `db:push`, `db:migrate`, `db:generate`, and `db:seed` scripts
+- [x] Add Prisma and the generated client to `packages/database`
+- [x] Add `db:push`, `db:migrate`, `db:generate`, and `db:seed` scripts
 - [ ] Create the initial migration from `schema.prisma`
 - [ ] Add the recommended indexes from the database design doc that Stage 1 queries need
 - [ ] Set binary-safe collation on all `position` columns
 - [ ] Write the seed script: a mock workspace, members in every role, a board, columns, and cards
-- [ ] Export a shared Prisma client from `packages/database/src`
+- [x] Export a shared Prisma client from `packages/database/src`
 
 ### Shared contracts
-- [ ] Set up `packages/shared-types` with build output consumable by both apps
+- [x] Set up `packages/shared-types` with build output consumable by both apps
 - [ ] Define Zod schemas and inferred types for auth and workspace DTOs
-- [ ] Define the standard error response shape `{ message, code, details? }`
+- [x] Define the standard error response shape `{ message, code, details? }`
 
 ### API server
-- [ ] Decide Express or Fastify and record it as an architecture decision
-- [ ] Create the server entry point with graceful shutdown
-- [ ] Add liveness and readiness endpoints
-- [ ] Add centralized error-handling middleware
-- [ ] Add structured logging with request IDs
+- [x] Decide Express or Fastify and record it as an architecture decision
+- [x] Create the server entry point with graceful shutdown
+- [x] Add liveness and readiness endpoints
+- [x] Add centralized error-handling middleware
+- [x] Add structured logging with request IDs
 - [ ] Implement registration and login endpoints
 - [ ] Implement JWT issuance and verification middleware
 - [ ] Decide token lifetime, refresh, and revocation, then implement it
@@ -107,7 +107,7 @@ These apply to all items below and are part of each stage's definition of done:
 - [ ] Write audit entries for role changes within the same transaction
 
 ### Web application
-- [ ] Initialize Next.js (App Router) with Tailwind and shadcn/ui
+- [x] Initialize Next.js (App Router) with Tailwind and shadcn/ui
 - [ ] Set up the TanStack Query provider and client
 - [ ] Build `(auth)` routes: login, register, invite
 - [ ] Build the protected `(dashboard)/[workspaceSlug]` layout shell

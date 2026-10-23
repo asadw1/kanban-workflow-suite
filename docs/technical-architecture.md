@@ -120,7 +120,7 @@ flowchart TB
     end
 
     subgraph Backend
-        API[API Service<br/>Express or Fastify]
+        API[API Service<br/>Fastify]
         WS[Real-Time Gateway<br/>Socket.io]
         Worker[Queue Workers<br/>BullMQ]
     end
@@ -149,7 +149,7 @@ flowchart TB
 | Client state | TanStack Query v5, Zustand | Query for server state; Zustand for UI-only state |
 | Drag and drop | `@dnd-kit` | Optimistic updates with rollback |
 | Data grid / canvas | TanStack Table v8, React Flow | |
-| API | Node.js 20+, Express or Fastify **(open)** | Controllers, services, middleware |
+| API | Node.js 20+, Fastify 5 (ADR-009) | Controllers, services, middleware |
 | Real-time | Socket.io with `@socket.io/redis-adapter` | |
 | Jobs | BullMQ on Redis | |
 | Persistence | PostgreSQL 15+ via Prisma | |
@@ -465,18 +465,20 @@ Required automated tests include: a negative test for every role/endpoint pair i
 | ADR-006 | TanStack Query for server state, Zustand for UI state only | Clear ownership of data; avoids duplicated caches | Contributors must respect the boundary |
 | ADR-007 | Zod schemas as the source of types | One definition for runtime validation and static types | Schemas are part of the public contract and need review |
 | ADR-008 | PostgreSQL as the sole system of record | Strong consistency and transactions for audit integrity | Redis state must always be reconstructible |
+| ADR-009 | Fastify for the API service | Schema-oriented request lifecycle, built-in structured logging with request ids, `inject()` for fast integration tests, and good throughput; Socket.io attaches to its underlying HTTP server | Smaller middleware ecosystem than Express; contributors must use Fastify hooks and plugins rather than Express middleware |
+| ADR-010 | Vitest as the unit and integration test runner | Native ESM and TypeScript, fast watch mode, one runner across all workspaces | Playwright remains separate for end-to-end tests |
 
 ---
 
 ## 16. Open Questions
 
-1. Express or Fastify for the API service?
+1. ~~Express or Fastify for the API service?~~ Resolved: Fastify (ADR-009).
 2. Identity: self-managed accounts only, or an external identity provider?
 3. Token lifetime, refresh, and revocation design.
 4. Whether the gateway runs in the API process or as its own deployable.
 5. Hosting platform and container orchestration.
 6. Attachment storage backend (for example S3-compatible object storage).
-7. Unit test runner selection.
+7. ~~Unit test runner selection.~~ Resolved: Vitest (ADR-010).
 8. Data retention for `ActivityLog` and soft-delete requirements for boards and cards.
 
 ---
