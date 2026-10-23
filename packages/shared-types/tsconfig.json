@@ -1,0 +1,11 @@
+{
+  // Library package: type-checked only. Emit (JS + .d.ts) is done by tsup, see tsup.config.ts.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": [],
+    "baseUrl": ".",
+    "paths": { "@/*": ["./src/*"] }
+  },
+  "include": ["src", "*.ts"]
+}

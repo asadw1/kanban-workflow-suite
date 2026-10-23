@@ -1,0 +1,11 @@
+{
+  // Library package: type-checked only. Emit is done by tsup, see tsup.config.ts.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": { "@/*": ["./src/*"] }
+  },
+  "include": ["src", "prisma/seed.ts", "*.ts"]
+}
