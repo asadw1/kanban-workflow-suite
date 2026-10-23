@@ -59,28 +59,7 @@ Designed for teams requiring high-concurrency event processing, multi-tenant wor
 
 ## System Architecture
 
-```
-                               ┌─────────────────────────────────────────┐
-                               │       React 19 + shadcn/ui App          │
-                               │    (Next.js App Router / Tailwind)      │
-                               └────────────────────┬────────────────────┘
-                                                    │
-                             ┌──────────────────────┴──────────────────────┐
-                             │                                             │
-                       HTTP / REST API                               WebSockets / WSS
-                             │                                             │
-                             ▼                                             ▼
-               ┌───────────────────────────┐                 ┌───────────────────────────┐
-               │   Node.js API Service     │                 │    Real-Time WS Server    │
-               │   (Express / Fastify)     │                 │   (Socket.io Gateway)     │
-               └─────────────┬─────────────┘                 └─────────────┬─────────────┘
-                             │                                             │
-                             ├──────────────────────┬──────────────────────┤
-                             ▼                      ▼                      ▼
-                   ┌───────────────────┐  ┌───────────────────┐  ┌───────────────────┐
-                   │ PostgreSQL (Data) │  │  Redis (Pub/Sub)  │  │  BullMQ (Queue)   │
-                   └───────────────────┘  └───────────────────┘  └───────────────────┘
-```
+The platform is a Next.js frontend backed by a dedicated Node.js API and Socket.io gateway, with PostgreSQL for persistence and Redis for pub/sub and BullMQ job queues. The full design, including component views, data flows, security, scalability, and deployment, is in the [Technical Architecture Document](docs/technical-architecture.md).
 
 ---
 
@@ -111,233 +90,7 @@ Designed for teams requiring high-concurrency event processing, multi-tenant wor
 
 ## Database Schema Overview
 
-The core PostgreSQL schema managed by Prisma includes the following entity structures:
-
-```prisma
-datasource db {
-  provider = "postgresql"
-  url      = env("DATABASE_URL")
-}
-
-generator client {
-  provider = "prisma-client-js"
-}
-
-enum Role {
-  OWNER
-  ADMIN
-  MEMBER
-  VIEWER
-}
-
-enum Priority {
-  LOW
-  MEDIUM
-  HIGH
-  URGENT
-}
-
-enum CustomFieldType {
-  TEXT
-  NUMBER
-  SELECT
-  MULTI_SELECT
-  DATE
-  CHECKBOX
-  USER
-}
-
-model User {
-  id            String            @id @default(cuid())
-  email         String            @unique
-  name          String
-  avatarUrl     String?
-  memberships   WorkspaceMember[]
-  assignedCards Card[]            @relation("AssignedUser")
-  comments      Comment[]
-  createdCards  Card[]            @relation("CreatedUser")
-  attachments   Attachment[]
-  activityLogs  ActivityLog[]
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
-}
-
-model Workspace {
-  id          String            @id @default(cuid())
-  name        String
-  slug        String            @unique
-  members     WorkspaceMember[]
-  boards      Board[]
-  automations AutomationRule[]
-  customFields CustomField[]
-  tags        Tag[]
-  logs        ActivityLog[]
-  createdAt   DateTime          @default(now())
-  updatedAt   DateTime          @updatedAt
-}
-
-model WorkspaceMember {
-  id          String    @id @default(cuid())
-  role        Role      @default(MEMBER)
-  userId      String
-  workspaceId String
-  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-
-  @@unique([userId, workspaceId])
-}
-
-model Board {
-  id          String    @id @default(cuid())
-  title       String
-  position    String    // Lexorank
-  workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  columns     Column[]
-  createdAt   DateTime  @default(now())
-  updatedAt   DateTime  @updatedAt
-}
-
-model Column {
-  id        String   @id @default(cuid())
-  title     String
-  position  String   // Lexorank
-  boardId   String
-  board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
-  cards     Card[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
-}
-
-model Card {
-  id            String            @id @default(cuid())
-  title         String
-  description   String?
-  position      String            // Lexorank
-  priority      Priority          @default(MEDIUM)
-  dueDate       DateTime?
-  columnId      String
-  column        Column            @relation(fields: [columnId], references: [id], onDelete: Cascade)
-  assigneeId    String?
-  assignee      User?             @relation("AssignedUser", fields: [assigneeId], references: [id])
-  creatorId     String
-  creator       User              @relation("CreatedUser", fields: [creatorId], references: [id])
-  comments      Comment[]
-  fieldValues   CustomFieldValue[]
-  checklists    Checklist[]
-  attachments   Attachment[]
-  tags          TagOnCard[]
-  createdAt     DateTime          @default(now())
-  updatedAt     DateTime          @updatedAt
-}
-
-model CustomField {
-  id          String             @id @default(cuid())
-  name        String
-  fieldType   CustomFieldType
-  options     String[]           // For SELECT / MULTI_SELECT types
-  workspaceId String
-  workspace   Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  values      CustomFieldValue[]
-}
-
-model CustomFieldValue {
-  id            String      @id @default(cuid())
-  value         Json        // Shape depends on fieldType (e.g., string[] for MULTI_SELECT)
-  cardId        String
-  card          Card        @relation(fields: [cardId], references: [id], onDelete: Cascade)
-  customFieldId String
-  customField   CustomField @relation(fields: [customFieldId], references: [id], onDelete: Cascade)
-
-  @@unique([cardId, customFieldId])
-}
-
-model AutomationRule {
-  id          String    @id @default(cuid())
-  name        String
-  triggerType String    // e.g., CARD_MOVED, CARD_CREATED, DUE_DATE_APPROACHING
-  triggerConfig Json
-  actionType  String    // e.g., REASSIGN, SEND_WEBHOOK, CHANGE_PRIORITY
-  actionConfig  Json
-  isActive    Boolean   @default(true)
-  workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-}
-
-model Checklist {
-  id        String          @id @default(cuid())
-  title     String
-  cardId    String
-  card      Card            @relation(fields: [cardId], references: [id], onDelete: Cascade)
-  items     ChecklistItem[]
-}
-
-model ChecklistItem {
-  id          String    @id @default(cuid())
-  content     String
-  isCompleted Boolean   @default(false)
-  checklistId String
-  checklist   Checklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
-}
-
-model Comment {
-  id        String   @id @default(cuid())
-  content   String
-  cardId    String
-  card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
-  authorId  String
-  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
-  createdAt DateTime @default(now())
-}
-
-model Attachment {
-  id         String   @id @default(cuid())
-  fileName   String
-  fileUrl    String
-  mimeType   String
-  sizeBytes  Int
-  cardId     String
-  card       Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
-  uploaderId String
-  uploader   User     @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
-  createdAt  DateTime @default(now())
-}
-
-model Tag {
-  id          String      @id @default(cuid())
-  name        String
-  color       String
-  workspaceId String
-  workspace   Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  cards       TagOnCard[]
-
-  @@unique([workspaceId, name])
-}
-
-model TagOnCard {
-  cardId String
-  tagId  String
-  card   Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
-  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
-
-  @@id([cardId, tagId])
-}
-
-model ActivityLog {
-  id          String    @id @default(cuid())
-  action      String
-  entityType  String
-  entityId    String
-  details     Json?
-  actorId     String?   // Null when the user is deleted or the action is system-generated
-  actor       User?     @relation(fields: [actorId], references: [id], onDelete: SetNull)
-  workspaceId String
-  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
-  createdAt   DateTime  @default(now())
-
-  @@index([workspaceId, createdAt])
-}
-```
+The PostgreSQL schema is managed by Prisma. See the [Database Design Document](docs/database-design.md) for the entity model, relationships, indexing, and data-integrity rules. The canonical schema lives in [`packages/database/prisma/schema.prisma`](packages/database/prisma/schema.prisma).
 
 ---
 
@@ -398,6 +151,7 @@ All real-time communication flows over Socket.io namespaces and rooms.
 │   │   └── src/                     # Shared Prisma client exports
 │   └── shared-types/                # Shared TypeScript DTOs & Socket event types
 │
+├── docs/                            # Technical Architecture & Database Design documents
 ├── docker-compose.yml               # Local infrastructure (Postgres + Redis)
 ├── turbo.json                       # Turborepo build pipeline
 └── package.json
@@ -467,36 +221,15 @@ The applications will be accessible at:
 
 ## 6-Week Development Roadmap
 
-```
-[Week 1] Data Architecture & Authentication
-  ├── Prisma Schema & Migrations
-  ├── JWT Auth Middleware & RBAC
-  └── Workspace Layout Shell & Command Palette
-
-[Week 2] Kanban & Data Table Engines
-  ├── @dnd-kit Card/Column DND Integration
-  ├── Lexorank Fractional Indexing Algorithm
-  └── TanStack Table View with Filtering & Inline Edits
-
-[Week 3] Real-Time Layer & Presence
-  ├── Socket.io Room Gateway Setup
-  ├── Redis Pub/Sub Scaling Adapter
-  └── Live Cursors & Active Member Presence Indicators
-
-[Week 4] Card Detail Sheets & Custom Fields Engine
-  ├── Dynamic Custom Field Builder UI
-  ├── Slide-Over Card Modal with Checklist & Activity
-  └── Optimistic UI State Handling via TanStack Query
-
-[Week 5] Visual Automation Builder & Queue Processor
-  ├── React Flow Node Canvas UI
-  ├── BullMQ Job Worker Processing
-  └── Event Trigger Engine (Card Moves, Assignment Rules)
-
-[Week 6] Accessibility, Performance & Deployment
-  ├── Keyboard Accessibility Pass (ARIA & Cmd+K)
-  ├── E2E Concurrent Sync Testing
-  └── CI/CD Setup, Docker Containerization, and Documentation
+```mermaid
+timeline
+    title 6-Week Development Roadmap
+    Week 1 - Data Architecture and Authentication : Prisma Schema and Migrations : JWT Auth Middleware and RBAC : Workspace Layout Shell and Command Palette
+    Week 2 - Kanban and Data Table Engines : dnd-kit Card and Column DND Integration : Lexorank Fractional Indexing Algorithm : TanStack Table View with Filtering and Inline Edits
+    Week 3 - Real-Time Layer and Presence : Socket.io Room Gateway Setup : Redis Pub/Sub Scaling Adapter : Live Cursors and Active Member Presence Indicators
+    Week 4 - Card Detail Sheets and Custom Fields Engine : Dynamic Custom Field Builder UI : Slide-Over Card Modal with Checklist and Activity : Optimistic UI State Handling via TanStack Query
+    Week 5 - Visual Automation Builder and Queue Processor : React Flow Node Canvas UI : BullMQ Job Worker Processing : Event Trigger Engine for Card Moves and Assignment Rules
+    Week 6 - Accessibility and Deployment : Keyboard Accessibility Pass with ARIA and Cmd+K : E2E Concurrent Sync Testing : CI/CD Setup and Docker Containerization and Documentation
 ```
 
 ---

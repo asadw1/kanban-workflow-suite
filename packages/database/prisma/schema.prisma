@@ -1,0 +1,223 @@
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  OWNER
+  ADMIN
+  MEMBER
+  VIEWER
+}
+
+enum Priority {
+  LOW
+  MEDIUM
+  HIGH
+  URGENT
+}
+
+enum CustomFieldType {
+  TEXT
+  NUMBER
+  SELECT
+  MULTI_SELECT
+  DATE
+  CHECKBOX
+  USER
+}
+
+model User {
+  id            String            @id @default(cuid())
+  email         String            @unique
+  name          String
+  avatarUrl     String?
+  memberships   WorkspaceMember[]
+  assignedCards Card[]            @relation("AssignedUser")
+  comments      Comment[]
+  createdCards  Card[]            @relation("CreatedUser")
+  attachments   Attachment[]
+  activityLogs  ActivityLog[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+model Workspace {
+  id          String            @id @default(cuid())
+  name        String
+  slug        String            @unique
+  members     WorkspaceMember[]
+  boards      Board[]
+  automations AutomationRule[]
+  customFields CustomField[]
+  tags        Tag[]
+  logs        ActivityLog[]
+  createdAt   DateTime          @default(now())
+  updatedAt   DateTime          @updatedAt
+}
+
+model WorkspaceMember {
+  id          String    @id @default(cuid())
+  role        Role      @default(MEMBER)
+  userId      String
+  workspaceId String
+  user        User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, workspaceId])
+}
+
+model Board {
+  id          String    @id @default(cuid())
+  title       String
+  position    String    // Lexorank
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  columns     Column[]
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model Column {
+  id        String   @id @default(cuid())
+  title     String
+  position  String   // Lexorank
+  boardId   String
+  board     Board    @relation(fields: [boardId], references: [id], onDelete: Cascade)
+  cards     Card[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
+
+model Card {
+  id            String            @id @default(cuid())
+  title         String
+  description   String?
+  position      String            // Lexorank
+  priority      Priority          @default(MEDIUM)
+  dueDate       DateTime?
+  columnId      String
+  column        Column            @relation(fields: [columnId], references: [id], onDelete: Cascade)
+  assigneeId    String?
+  assignee      User?             @relation("AssignedUser", fields: [assigneeId], references: [id])
+  creatorId     String
+  creator       User              @relation("CreatedUser", fields: [creatorId], references: [id])
+  comments      Comment[]
+  fieldValues   CustomFieldValue[]
+  checklists    Checklist[]
+  attachments   Attachment[]
+  tags          TagOnCard[]
+  createdAt     DateTime          @default(now())
+  updatedAt     DateTime          @updatedAt
+}
+
+model CustomField {
+  id          String             @id @default(cuid())
+  name        String
+  fieldType   CustomFieldType
+  options     String[]           // For SELECT / MULTI_SELECT types
+  workspaceId String
+  workspace   Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  values      CustomFieldValue[]
+}
+
+model CustomFieldValue {
+  id            String      @id @default(cuid())
+  value         Json        // Shape depends on fieldType (e.g., string[] for MULTI_SELECT)
+  cardId        String
+  card          Card        @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  customFieldId String
+  customField   CustomField @relation(fields: [customFieldId], references: [id], onDelete: Cascade)
+
+  @@unique([cardId, customFieldId])
+}
+
+model AutomationRule {
+  id          String    @id @default(cuid())
+  name        String
+  triggerType String    // e.g., CARD_MOVED, CARD_CREATED, DUE_DATE_APPROACHING
+  triggerConfig Json
+  actionType  String    // e.g., REASSIGN, SEND_WEBHOOK, CHANGE_PRIORITY
+  actionConfig  Json
+  isActive    Boolean   @default(true)
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+}
+
+model Checklist {
+  id        String          @id @default(cuid())
+  title     String
+  cardId    String
+  card      Card            @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  items     ChecklistItem[]
+}
+
+model ChecklistItem {
+  id          String    @id @default(cuid())
+  content     String
+  isCompleted Boolean   @default(false)
+  checklistId String
+  checklist   Checklist @relation(fields: [checklistId], references: [id], onDelete: Cascade)
+}
+
+model Comment {
+  id        String   @id @default(cuid())
+  content   String
+  cardId    String
+  card      Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  authorId  String
+  author    User     @relation(fields: [authorId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+}
+
+model Attachment {
+  id         String   @id @default(cuid())
+  fileName   String
+  fileUrl    String
+  mimeType   String
+  sizeBytes  Int
+  cardId     String
+  card       Card     @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  uploaderId String
+  uploader   User     @relation(fields: [uploaderId], references: [id], onDelete: Cascade)
+  createdAt  DateTime @default(now())
+}
+
+model Tag {
+  id          String      @id @default(cuid())
+  name        String
+  color       String
+  workspaceId String
+  workspace   Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  cards       TagOnCard[]
+
+  @@unique([workspaceId, name])
+}
+
+model TagOnCard {
+  cardId String
+  tagId  String
+  card   Card   @relation(fields: [cardId], references: [id], onDelete: Cascade)
+  tag    Tag    @relation(fields: [tagId], references: [id], onDelete: Cascade)
+
+  @@id([cardId, tagId])
+}
+
+model ActivityLog {
+  id          String    @id @default(cuid())
+  action      String
+  entityType  String
+  entityId    String
+  details     Json?
+  actorId     String?   // Null when the user is deleted or the action is system-generated
+  actor       User?     @relation(fields: [actorId], references: [id], onDelete: SetNull)
+  workspaceId String
+  workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  createdAt   DateTime  @default(now())
+
+  @@index([workspaceId, createdAt])
+}
