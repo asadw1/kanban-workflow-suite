@@ -151,7 +151,7 @@ All real-time communication flows over Socket.io namespaces and rooms.
 │   │   └── src/                     # Shared Prisma client exports
 │   └── shared-types/                # Shared TypeScript DTOs & Socket event types
 │
-├── docs/                            # Technical Architecture & Database Design documents
+├── docs/                            # Architecture, database, UI, and roadmap documents
 ├── docker-compose.yml               # Local infrastructure (Postgres + Redis)
 ├── turbo.json                       # Turborepo build pipeline
 └── package.json
@@ -219,18 +219,9 @@ The applications will be accessible at:
 
 ---
 
-## 6-Week Development Roadmap
+## Development Roadmap
 
-```mermaid
-timeline
-    title 6-Week Development Roadmap
-    Week 1 - Data Architecture and Authentication : Prisma Schema and Migrations : JWT Auth Middleware and RBAC : Workspace Layout Shell and Command Palette
-    Week 2 - Kanban and Data Table Engines : dnd-kit Card and Column DND Integration : Lexorank Fractional Indexing Algorithm : TanStack Table View with Filtering and Inline Edits
-    Week 3 - Real-Time Layer and Presence : Socket.io Room Gateway Setup : Redis Pub/Sub Scaling Adapter : Live Cursors and Active Member Presence Indicators
-    Week 4 - Card Detail Sheets and Custom Fields Engine : Dynamic Custom Field Builder UI : Slide-Over Card Modal with Checklist and Activity : Optimistic UI State Handling via TanStack Query
-    Week 5 - Visual Automation Builder and Queue Processor : React Flow Node Canvas UI : BullMQ Job Worker Processing : Event Trigger Engine for Card Moves and Assignment Rules
-    Week 6 - Accessibility and Deployment : Keyboard Accessibility Pass with ARIA and Cmd+K : E2E Concurrent Sync Testing : CI/CD Setup and Docker Containerization and Documentation
-```
+The build is planned as a completed foundation stage plus six weekly stages, from data architecture and authentication through accessibility, performance, and deployment. The stage-by-stage checklists, dependencies, and exit criteria are in the [Development Roadmap](docs/roadmap.md).
 
 ---
 
