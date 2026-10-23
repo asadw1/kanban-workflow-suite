@@ -1,0 +1,12 @@
+{
+  // Node service. `@/` maps to src/ and is resolved at build time by tsup (esbuild honours
+  // `paths`) and at dev time by tsx, so no runtime alias plugin is needed.
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "noEmit": true,
+    "types": ["node"],
+    "baseUrl": ".",
+    "paths": { "@/*": ["./src/*"] }
+  },
+  "include": ["src", "*.ts"]
+}
