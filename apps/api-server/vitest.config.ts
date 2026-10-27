@@ -12,11 +12,19 @@ export default defineConfig({
   test: {
     environment: "node",
     include: ["src/**/*.test.ts"],
+    // Integration tests need a real database; they run via vitest.integration.config.ts.
+    exclude: ["src/**/*.integration.test.ts", "node_modules/**"],
     coverage: {
       provider: "v8",
       include: ["src/**/*.ts"],
       // index.ts only wires real infrastructure (listen, signals); everything it calls is tested.
-      exclude: ["src/**/*.test.ts", "src/index.ts", "src/**/*.types.ts", "src/testing/**"],
+      exclude: [
+        "src/**/*.test.ts",
+        "src/integration/**",
+        "src/index.ts",
+        "src/**/*.types.ts",
+        "src/testing/**",
+      ],
       thresholds: { lines: 98, functions: 98, branches: 95, statements: 98 },
     },
   },
