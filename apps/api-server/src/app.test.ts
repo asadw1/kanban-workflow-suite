@@ -10,8 +10,13 @@ import { ErrorResponseSchema } from "shared-types";
 import { buildApp } from "@/app";
 import { AppError } from "@/errors/app-error";
 import { ReadinessService, type ReadinessCheck } from "@/services/readiness.service";
+import { createFakeAuth, fakeAccessTokens } from "@/testing/auth-fakes";
 
-const config = { WEB_ORIGIN: "http://localhost:3000", LOG_LEVEL: "silent" } as const;
+const config = {
+  WEB_ORIGIN: "http://localhost:3000",
+  LOG_LEVEL: "silent",
+  NODE_ENV: "test",
+} as const;
 
 const upCheck: ReadinessCheck = { name: "postgres", check: async () => undefined };
 const downCheck: ReadinessCheck = {
@@ -24,7 +29,11 @@ const downCheck: ReadinessCheck = {
 let app: FastifyInstance;
 
 async function build(checks: ReadinessCheck[] = [upCheck]): Promise<FastifyInstance> {
-  app = await buildApp(config, { readiness: new ReadinessService(checks) });
+  app = await buildApp(config, {
+    readiness: new ReadinessService(checks),
+    auth: createFakeAuth(),
+    accessTokens: fakeAccessTokens,
+  });
   return app;
 }
 

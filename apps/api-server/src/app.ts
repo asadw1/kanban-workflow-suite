@@ -5,23 +5,29 @@
  * and `index.ts` stays a thin composition root.
  */
 import { randomUUID } from "node:crypto";
+import cookie from "@fastify/cookie";
 import cors from "@fastify/cors";
 import helmet from "@fastify/helmet";
 import Fastify, { type FastifyInstance } from "fastify";
+import { registerAuthRoutes, type AuthUseCases } from "@/controllers/auth.controller";
 import { registerHealthRoutes } from "@/controllers/health.controller";
 import type { Env } from "@/config/env";
+import { createAuthenticate } from "@/middlewares/authenticate";
 import { registerErrorHandling } from "@/middlewares/error-handler";
+import type { AccessTokenService } from "@/security/access-token";
 import type { ReadinessService } from "@/services/readiness.service";
 
 /** Header used to accept and echo a correlation id across services. */
 const REQUEST_ID_HEADER = "x-request-id";
 
 /** Only the configuration the app factory needs (Interface Segregation). */
-export type AppConfig = Pick<Env, "WEB_ORIGIN" | "LOG_LEVEL">;
+export type AppConfig = Pick<Env, "WEB_ORIGIN" | "LOG_LEVEL" | "NODE_ENV">;
 
 /** Collaborators injected into the app (Dependency Inversion). */
 export interface AppDependencies {
   readiness: ReadinessService;
+  auth: AuthUseCases;
+  accessTokens: AccessTokenService;
 }
 
 /**
@@ -32,7 +38,7 @@ export interface AppDependencies {
  * @returns A ready (not yet listening) Fastify instance.
  * @throws Error if a plugin fails to register.
  * @sideEffects Registers CORS restricted to the web origin, security headers, request-id
- * propagation and the central error handler. Auth headers and cookies are redacted from logs.
+ * propagation, cookie parsing, the central error handler, health routes and auth routes. Auth headers and cookies are redacted from logs.
  */
 export async function buildApp(config: AppConfig, deps: AppDependencies): Promise<FastifyInstance> {
   const app = Fastify({
@@ -49,6 +55,7 @@ export async function buildApp(config: AppConfig, deps: AppDependencies): Promis
 
   await app.register(helmet);
   await app.register(cors, { origin: config.WEB_ORIGIN, credentials: true });
+  await app.register(cookie);
 
   app.addHook("onSend", async (request, reply) => {
     reply.header(REQUEST_ID_HEADER, request.id);
@@ -56,6 +63,11 @@ export async function buildApp(config: AppConfig, deps: AppDependencies): Promis
 
   registerErrorHandling(app);
   registerHealthRoutes(app, deps.readiness);
+  registerAuthRoutes(app, {
+    auth: deps.auth,
+    authenticate: createAuthenticate(deps.accessTokens),
+    secureCookies: config.NODE_ENV === "production",
+  });
 
   return app;
 }

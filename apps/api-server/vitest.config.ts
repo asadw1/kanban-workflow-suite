@@ -16,7 +16,7 @@ export default defineConfig({
       provider: "v8",
       include: ["src/**/*.ts"],
       // index.ts only wires real infrastructure (listen, signals); everything it calls is tested.
-      exclude: ["src/**/*.test.ts", "src/index.ts", "src/**/*.types.ts"],
+      exclude: ["src/**/*.test.ts", "src/index.ts", "src/**/*.types.ts", "src/testing/**"],
       thresholds: { lines: 98, functions: 98, branches: 95, statements: 98 },
     },
   },

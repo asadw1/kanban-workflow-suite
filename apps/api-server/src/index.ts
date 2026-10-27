@@ -7,6 +7,9 @@
 import { createPrismaClient } from "database";
 import { buildApp } from "@/app";
 import { loadEnv } from "@/config/env";
+import { JoseAccessTokenService } from "@/security/access-token";
+import { ScryptPasswordHasher } from "@/security/password-hasher";
+import { AuthService } from "@/services/auth.service";
 import { PrismaReadinessCheck } from "@/services/prisma-readiness-check";
 import { ReadinessService } from "@/services/readiness.service";
 import { createShutdownHandler } from "@/server/graceful-shutdown";
@@ -16,8 +19,17 @@ const SHUTDOWN_TIMEOUT_MS = 10_000;
 
 const env = loadEnv();
 const prisma = createPrismaClient(env.DATABASE_URL);
+const accessTokens = new JoseAccessTokenService(env.JWT_SECRET, env.JWT_ACCESS_TTL_SECONDS);
+const auth = new AuthService({
+  prisma,
+  hasher: new ScryptPasswordHasher(),
+  tokens: accessTokens,
+  refreshTtlMs: env.REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000,
+});
 const app = await buildApp(env, {
   readiness: new ReadinessService([new PrismaReadinessCheck(prisma)]),
+  auth,
+  accessTokens,
 });
 
 const shutdown = createShutdownHandler({
