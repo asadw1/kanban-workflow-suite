@@ -2,8 +2,8 @@
  * @file env.test.ts
  * @description Unit tests for API server environment validation.
  */
-import { describe, expect, it } from "vitest";
-import { parseEnv } from "@/config/env";
+import { afterEach, describe, expect, it, vi } from "vitest";
+import { loadEnv, parseEnv } from "@/config/env";
 
 const valid = {
   DATABASE_URL: "postgresql://u:p@localhost:5432/db",
@@ -33,5 +33,18 @@ describe("parseEnv", () => {
 
   it("does not leak secret values in error messages", () => {
     expect(() => parseEnv({ ...valid, NODE_ENV: "production" })).not.toThrow(/change-me/);
+  });
+});
+
+describe("loadEnv", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  it("reads the real process environment", () => {
+    vi.stubEnv("DATABASE_URL", valid.DATABASE_URL);
+    vi.stubEnv("REDIS_URL", valid.REDIS_URL);
+    vi.stubEnv("JWT_SECRET", valid.JWT_SECRET);
+    expect(loadEnv().DATABASE_URL).toBe(valid.DATABASE_URL);
   });
 });

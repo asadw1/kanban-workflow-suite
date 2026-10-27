@@ -46,4 +46,24 @@ describe("createShutdownHandler", () => {
     expect(close).toHaveBeenCalledOnce();
     expect(exit).toHaveBeenCalledOnce();
   });
+
+  it("forces exit 1 when a task outlives the deadline", async () => {
+    vi.useFakeTimers();
+    try {
+      const exit = vi.fn();
+      const logs: string[] = [];
+      const handler = createShutdownHandler({
+        tasks: [{ name: "stuck", close: () => new Promise<void>(() => undefined) }],
+        timeoutMs: 500,
+        log: (message) => void logs.push(message),
+        exit,
+      });
+      void handler("SIGTERM");
+      await vi.advanceTimersByTimeAsync(500);
+      expect(exit).toHaveBeenCalledExactlyOnceWith(1);
+      expect(logs).toContain("shutdown timed out, forcing exit");
+    } finally {
+      vi.useRealTimers();
+    }
+  });
 });
