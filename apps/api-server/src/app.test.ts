@@ -10,7 +10,7 @@ import { ErrorResponseSchema } from "shared-types";
 import { buildApp } from "@/app";
 import { AppError } from "@/errors/app-error";
 import { ReadinessService, type ReadinessCheck } from "@/services/readiness.service";
-import { createFakeAuth, fakeAccessTokens } from "@/testing/auth-fakes";
+import { createFakeAuth, createFakeWorkspaces, fakeAccessTokens } from "@/testing/auth-fakes";
 
 const config = {
   WEB_ORIGIN: "http://localhost:3000",
@@ -32,6 +32,7 @@ async function build(checks: ReadinessCheck[] = [upCheck]): Promise<FastifyInsta
   app = await buildApp(config, {
     readiness: new ReadinessService(checks),
     auth: createFakeAuth(),
+    workspaces: createFakeWorkspaces(),
     accessTokens: fakeAccessTokens,
   });
   return app;

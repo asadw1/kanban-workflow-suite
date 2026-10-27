@@ -5,6 +5,7 @@
  */
 import { vi } from "vitest";
 import type { AuthUseCases } from "@/controllers/auth.controller";
+import type { WorkspaceUseCases } from "@/controllers/workspace.controller";
 import type { AccessTokenService } from "@/security/access-token";
 import type { AuthSession } from "@/services/auth.service";
 
@@ -25,6 +26,33 @@ export function createFakeAuth() {
     refresh: vi.fn<AuthUseCases["refresh"]>(async () => fakeSession),
     logout: vi.fn<AuthUseCases["logout"]>(async () => undefined),
     getProfile: vi.fn<AuthUseCases["getProfile"]>(async () => fakeSession.user),
+  };
+}
+
+/** Workspace use cases whose every method is a spy returning plausible data. */
+export function createFakeWorkspaces() {
+  const workspace = { id: "w1", name: "Acme", slug: "acme", role: "OWNER" } as const;
+  const member = {
+    id: "m1",
+    userId: "user_1",
+    name: "Ada",
+    email: "ada@example.com",
+    avatarUrl: null,
+    role: "MEMBER",
+  } as const;
+  return {
+    create: vi.fn<WorkspaceUseCases["create"]>(async () => workspace),
+    listForUser: vi.fn<WorkspaceUseCases["listForUser"]>(async () => ({
+      items: [workspace],
+      nextCursor: null,
+    })),
+    get: vi.fn<WorkspaceUseCases["get"]>(async () => workspace),
+    listMembers: vi.fn<WorkspaceUseCases["listMembers"]>(async () => ({
+      items: [member],
+      nextCursor: null,
+    })),
+    inviteMember: vi.fn<WorkspaceUseCases["inviteMember"]>(async () => member),
+    changeMemberRole: vi.fn<WorkspaceUseCases["changeMemberRole"]>(async () => member),
   };
 }
 

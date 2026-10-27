@@ -11,6 +11,10 @@ import helmet from "@fastify/helmet";
 import Fastify, { type FastifyInstance } from "fastify";
 import { registerAuthRoutes, type AuthUseCases } from "@/controllers/auth.controller";
 import { registerHealthRoutes } from "@/controllers/health.controller";
+import {
+  registerWorkspaceRoutes,
+  type WorkspaceUseCases,
+} from "@/controllers/workspace.controller";
 import type { Env } from "@/config/env";
 import { createAuthenticate } from "@/middlewares/authenticate";
 import { registerErrorHandling } from "@/middlewares/error-handler";
@@ -27,6 +31,7 @@ export type AppConfig = Pick<Env, "WEB_ORIGIN" | "LOG_LEVEL" | "NODE_ENV">;
 export interface AppDependencies {
   readiness: ReadinessService;
   auth: AuthUseCases;
+  workspaces: WorkspaceUseCases;
   accessTokens: AccessTokenService;
 }
 
@@ -63,11 +68,13 @@ export async function buildApp(config: AppConfig, deps: AppDependencies): Promis
 
   registerErrorHandling(app);
   registerHealthRoutes(app, deps.readiness);
+  const authenticate = createAuthenticate(deps.accessTokens);
   registerAuthRoutes(app, {
     auth: deps.auth,
-    authenticate: createAuthenticate(deps.accessTokens),
+    authenticate,
     secureCookies: config.NODE_ENV === "production",
   });
+  registerWorkspaceRoutes(app, { workspaces: deps.workspaces, authenticate });
 
   return app;
 }

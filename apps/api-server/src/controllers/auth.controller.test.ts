@@ -9,7 +9,7 @@ import { AuthResponseSchema, UserDtoSchema } from "shared-types";
 import { buildApp, type AppConfig } from "@/app";
 import { AppError } from "@/errors/app-error";
 import { ReadinessService } from "@/services/readiness.service";
-import { createFakeAuth, fakeAccessTokens } from "@/testing/auth-fakes";
+import { createFakeAuth, createFakeWorkspaces, fakeAccessTokens } from "@/testing/auth-fakes";
 
 let app: FastifyInstance;
 
@@ -17,7 +17,12 @@ async function build(overrides: Partial<AppConfig> = {}) {
   const auth = createFakeAuth();
   app = await buildApp(
     { WEB_ORIGIN: "http://localhost:3000", LOG_LEVEL: "silent", NODE_ENV: "test", ...overrides },
-    { readiness: new ReadinessService([]), auth, accessTokens: fakeAccessTokens },
+    {
+      readiness: new ReadinessService([]),
+      auth,
+      workspaces: createFakeWorkspaces(),
+      accessTokens: fakeAccessTokens,
+    },
   );
   return auth;
 }

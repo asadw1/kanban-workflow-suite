@@ -12,6 +12,8 @@ import { ScryptPasswordHasher } from "@/security/password-hasher";
 import { AuthService } from "@/services/auth.service";
 import { PrismaReadinessCheck } from "@/services/prisma-readiness-check";
 import { ReadinessService } from "@/services/readiness.service";
+import { WorkspaceAccessService } from "@/services/workspace-access.service";
+import { WorkspaceService } from "@/services/workspace.service";
 import { createShutdownHandler } from "@/server/graceful-shutdown";
 
 /** Maximum time to drain in-flight work before forcing exit; below typical pod grace periods. */
@@ -26,9 +28,11 @@ const auth = new AuthService({
   tokens: accessTokens,
   refreshTtlMs: env.REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000,
 });
+const workspaces = new WorkspaceService({ prisma, guard: new WorkspaceAccessService(prisma) });
 const app = await buildApp(env, {
   readiness: new ReadinessService([new PrismaReadinessCheck(prisma)]),
   auth,
+  workspaces,
   accessTokens,
 });
 
