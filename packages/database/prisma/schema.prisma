@@ -69,6 +69,8 @@ model WorkspaceMember {
   workspace   Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
 
   @@unique([userId, workspaceId])
+  // The unique index above leads with userId, so member lists by workspace need their own index.
+  @@index([workspaceId])
 }
 
 model Board {
@@ -80,6 +82,8 @@ model Board {
   columns     Column[]
   createdAt   DateTime  @default(now())
   updatedAt   DateTime  @updatedAt
+
+  @@index([workspaceId, position])
 }
 
 model Column {
@@ -91,6 +95,8 @@ model Column {
   cards     Card[]
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
+
+  @@index([boardId, position])
 }
 
 model Card {
@@ -113,6 +119,9 @@ model Card {
   tags          TagOnCard[]
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
+
+  // Hottest read path: rendering a column's cards in display order.
+  @@index([columnId, position])
 }
 
 model CustomField {

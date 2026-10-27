@@ -165,10 +165,11 @@ The schema cannot express the following, so services must enforce them and tests
 - Unique: `User.email`, `Workspace.slug`, `WorkspaceMember(userId, workspaceId)`, `CustomFieldValue(cardId, customFieldId)`, `Tag(workspaceId, name)`.
 - Composite primary key: `TagOnCard(cardId, tagId)`.
 - `ActivityLog(workspaceId, createdAt)`.
+- `WorkspaceMember(workspaceId)`, `Board(workspaceId, position)`, `Column(boardId, position)`, `Card(columnId, position)` (added in the initial migration).
 
 ### 7.2 Recommended additions
 
-PostgreSQL does not index foreign key columns automatically. The following are not yet in the schema and should be added as the corresponding queries are implemented:
+PostgreSQL does not index foreign key columns automatically. The following (excluding those listed in 7.1) are not yet in the schema and should be added as the corresponding queries are implemented:
 
 | Index | Supports |
 | --- | --- |
@@ -192,7 +193,7 @@ Each addition should be justified against a real query plan before merging.
 
 - `position` is a lexicographically sortable string. Sorting by it, within a parent, returns display order.
 - A move computes a string between its new neighbors and updates only the moved row.
-- Positions must use a binary-safe collation (such as `C`) so database ordering matches the client's comparison. A locale-aware collation can sort differently and must not be used for these columns.
+- Positions must use a binary-safe collation (such as `C`) so database ordering matches the client's comparison. A locale-aware collation can sort differently and must not be used for these columns. Prisma has no collation attribute, so the `COLLATE "C"` clause lives in the initial migration SQL and must be preserved if migrations are regenerated.
 - When no midpoint exists, or keys grow beyond a length threshold, the server rebalances the affected parent's children and broadcasts the new positions.
 - Ordering is scoped: cards within a column, columns within a board, boards within a workspace.
 

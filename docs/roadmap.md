@@ -80,10 +80,10 @@ These apply to all items below and are part of each stage's definition of done:
 ### Database
 - [x] Add Prisma and the generated client to `packages/database`
 - [x] Add `db:push`, `db:migrate`, `db:generate`, and `db:seed` scripts
-- [ ] Create the initial migration from `schema.prisma`
-- [ ] Add the recommended indexes from the database design doc that Stage 1 queries need
-- [ ] Set binary-safe collation on all `position` columns
-- [ ] Write the seed script: a mock workspace, members in every role, a board, columns, and cards
+- [x] Create the initial migration from `schema.prisma`
+- [x] Add the recommended indexes from the database design doc that Stage 1 queries need
+- [x] Set binary-safe collation on all `position` columns
+- [x] Write the seed script: a mock workspace, members in every role, a board, columns, and cards
 - [x] Export a shared Prisma client from `packages/database/src`
 
 ### Shared contracts
