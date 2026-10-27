@@ -36,6 +36,11 @@ model User {
   email         String            @unique
   name          String
   avatarUrl     String?
+  // Argon2/scrypt hash in the self-describing format written by the API's PasswordHasher.
+  // Nullable so seeded users and any future external-identity users (TAD open question 2)
+  // exist without a password; login must reject accounts where this is null.
+  passwordHash  String?
+  refreshTokens RefreshToken[]
   memberships   WorkspaceMember[]
   assignedCards Card[]            @relation("AssignedUser")
   comments      Comment[]
@@ -44,6 +49,25 @@ model User {
   activityLogs  ActivityLog[]
   createdAt     DateTime          @default(now())
   updatedAt     DateTime          @updatedAt
+}
+
+// One row per issued refresh token. Only the SHA-256 of the token is stored, so a database
+// leak does not yield usable sessions. Tokens rotate on every use; `familyId` groups a login
+// session's chain so reuse of an already-rotated token revokes the whole chain.
+model RefreshToken {
+  id           String    @id @default(cuid())
+  tokenHash    String    @unique
+  familyId     String
+  userId       String
+  user         User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+  expiresAt    DateTime
+  revokedAt    DateTime?
+  createdAt    DateTime  @default(now())
+
+  @@index([userId])
+  @@index([familyId])
+  // Supports the periodic purge of expired rows.
+  @@index([expiresAt])
 }
 
 model Workspace {
