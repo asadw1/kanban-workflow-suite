@@ -322,9 +322,27 @@ The entity model, relationships, constraints, and indexing strategy are defined 
 
 ### 9.1 Authentication
 
-- Short-lived signed JWT access tokens, verified on both REST requests and the Socket.io handshake.
-- Token lifetime, refresh strategy, and revocation approach **(open)**.
-- Passwords, if used, are hashed with a memory-hard algorithm (Argon2id or bcrypt with a suitable cost).
+- Short-lived signed JWT access tokens (HS256, 15 minutes), verified on both REST requests and the Socket.io handshake. They are stateless and are not individually revocable; their short life bounds the exposure.
+- Sessions are kept alive by opaque refresh tokens (30 days) delivered only in an `httpOnly`, `SameSite=Strict`, path-scoped cookie. Only the SHA-256 of each token is stored (`RefreshToken` table), tokens rotate on every use, and presenting an already-rotated token revokes the whole session family (ADR-011).
+- Authorization never trusts the token for roles: the `WorkspaceMember` row is read on every request, so role changes and removals apply immediately.
+- Passwords are hashed with scrypt (N=32768, r=8, p=1, per-hash salt, parameters stored in the hash so cost can be raised later).
+
+```mermaid
+sequenceDiagram
+    participant C as Browser
+    participant A as API
+    participant D as PostgreSQL
+    C->>A: POST /auth/login
+    A->>D: verify password, insert RefreshToken (hash, family)
+    A-->>C: access token (body) + refresh cookie
+    Note over C,A: 15 minutes later the access token expires
+    C->>A: POST /auth/refresh (cookie)
+    A->>D: claim old token (revokedAt IS NULL), insert rotated token
+    A-->>C: new access token + new refresh cookie
+    C->>A: POST /auth/refresh (stolen, already rotated token)
+    A->>D: revoke entire family
+    A-->>C: 401, every device must log in again
+```
 
 ### 9.2 Authorization (RBAC)
 
@@ -467,6 +485,7 @@ Required automated tests include: a negative test for every role/endpoint pair i
 | ADR-008 | PostgreSQL as the sole system of record | Strong consistency and transactions for audit integrity | Redis state must always be reconstructible |
 | ADR-009 | Fastify for the API service | Schema-oriented request lifecycle, built-in structured logging with request ids, `inject()` for fast integration tests, and good throughput; Socket.io attaches to its underlying HTTP server | Smaller middleware ecosystem than Express; contributors must use Fastify hooks and plugins rather than Express middleware |
 | ADR-010 | Vitest as the unit and integration test runner | Native ESM and TypeScript, fast watch mode, one runner across all workspaces | Playwright remains separate for end-to-end tests |
+| ADR-011 | 15-minute JWT access tokens with rotating, hashed, family-revoked refresh tokens in an httpOnly cookie | Short exposure window without per-request token lookups, stolen refresh tokens are detected through reuse, and scripts in the page cannot read the refresh token | Access tokens cannot be revoked before expiry; refresh needs a database write; login rate limiting is still to be added |
 
 ---
 
@@ -474,7 +493,7 @@ Required automated tests include: a negative test for every role/endpoint pair i
 
 1. ~~Express or Fastify for the API service?~~ Resolved: Fastify (ADR-009).
 2. Identity: self-managed accounts only, or an external identity provider?
-3. Token lifetime, refresh, and revocation design.
+3. ~~Token lifetime, refresh, and revocation design.~~ Resolved: ADR-011.
 4. Whether the gateway runs in the API process or as its own deployable.
 5. Hosting platform and container orchestration.
 6. Attachment storage backend (for example S3-compatible object storage).

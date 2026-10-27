@@ -88,7 +88,7 @@ These apply to all items below and are part of each stage's definition of done:
 
 ### Shared contracts
 - [x] Set up `packages/shared-types` with build output consumable by both apps
-- [ ] Define Zod schemas and inferred types for auth and workspace DTOs
+- [x] Define Zod schemas and inferred types for auth and workspace DTOs
 - [x] Define the standard error response shape `{ message, code, details? }`
 
 ### API server
@@ -97,14 +97,14 @@ These apply to all items below and are part of each stage's definition of done:
 - [x] Add liveness and readiness endpoints
 - [x] Add centralized error-handling middleware
 - [x] Add structured logging with request IDs
-- [ ] Implement registration and login endpoints
-- [ ] Implement JWT issuance and verification middleware
-- [ ] Decide token lifetime, refresh, and revocation, then implement it
-- [ ] Implement workspace resolution middleware
-- [ ] Implement RBAC middleware enforcing `OWNER`, `ADMIN`, `MEMBER`, and `VIEWER`
-- [ ] Implement workspace create, list, and switch endpoints
-- [ ] Implement member invite and role-change endpoints
-- [ ] Write audit entries for role changes within the same transaction
+- [x] Implement registration and login endpoints
+- [x] Implement JWT issuance and verification middleware
+- [x] Decide token lifetime, refresh, and revocation, then implement it
+- [x] Implement workspace resolution middleware
+- [x] Implement RBAC middleware enforcing `OWNER`, `ADMIN`, `MEMBER`, and `VIEWER`
+- [x] Implement workspace create, list, and switch endpoints
+- [x] Implement member invite and role-change endpoints
+- [x] Write audit entries for role changes within the same transaction
 
 ### Web application
 - [x] Initialize Next.js (App Router) with Tailwind and shadcn/ui
@@ -115,9 +115,9 @@ These apply to all items below and are part of each stage's definition of done:
 - [ ] Build the command palette shell (`Cmd+K`) with navigation commands
 
 ### Exit criteria
-- [ ] A new user can register, create a workspace, and invite a member
-- [ ] Negative tests exist for every role and endpoint pair
-- [ ] A cross-tenant access attempt is rejected and tested
+- [x] A new user can register, create a workspace, and invite a member
+- [x] Negative tests exist for every role and endpoint pair
+- [x] A cross-tenant access attempt is rejected and tested
 - [ ] `pnpm dev`, `pnpm build`, `pnpm lint`, and `pnpm test` all pass from a clean clone
 
 ---
