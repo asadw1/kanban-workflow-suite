@@ -16,6 +16,10 @@ const EnvSchema = z
     DATABASE_URL: z.string().url(),
     REDIS_URL: z.string().url(),
     JWT_SECRET: z.string().min(1),
+    /** Access token lifetime. Short on purpose: it cannot be revoked, only outlived. */
+    JWT_ACCESS_TTL_SECONDS: z.coerce.number().int().min(60).max(3600).default(900),
+    /** Refresh token lifetime; a session ends after this long without a refresh. */
+    REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().min(1).max(90).default(30),
     /** Browser origin allowed by CORS and the Socket.io handshake. */
     WEB_ORIGIN: z.string().url().default("http://localhost:3000"),
     LOG_LEVEL: z

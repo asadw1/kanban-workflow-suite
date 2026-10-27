@@ -16,6 +16,14 @@ describe("parseEnv", () => {
     const env = parseEnv(valid);
     expect(env.PORT).toBe(4000);
     expect(env.NODE_ENV).toBe("development");
+    expect(env.JWT_ACCESS_TTL_SECONDS).toBe(900);
+    expect(env.REFRESH_TOKEN_TTL_DAYS).toBe(30);
+  });
+
+  it("rejects an access token lifetime outside the allowed range", () => {
+    expect(() => parseEnv({ ...valid, JWT_ACCESS_TTL_SECONDS: "5" })).toThrow(
+      /JWT_ACCESS_TTL_SECONDS/,
+    );
   });
 
   it("rejects missing required variables and names them", () => {
