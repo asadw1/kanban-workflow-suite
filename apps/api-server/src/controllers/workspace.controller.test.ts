@@ -38,6 +38,7 @@ describe("authentication", () => {
     { method: "GET", url: "/workspaces" },
     { method: "POST", url: "/workspaces" },
     { method: "GET", url: "/workspaces/w1" },
+    { method: "GET", url: "/workspaces/by-slug/acme" },
     { method: "GET", url: "/workspaces/w1/members" },
     { method: "POST", url: "/workspaces/w1/members" },
     { method: "PATCH", url: "/workspaces/w1/members/m1" },
@@ -115,6 +116,31 @@ describe("GET /workspaces/:workspaceId", () => {
     const res = await app.inject({ method: "GET", url: "/workspaces/other", headers: authed });
     expect(res.statusCode).toBe(404);
     expect(res.json().code).toBe("WORKSPACE_NOT_FOUND");
+  });
+});
+
+describe("GET /workspaces/by-slug/:slug", () => {
+  it("resolves by slug for the token user, not as a workspace id", async () => {
+    const workspaces = await build();
+    const res = await app.inject({
+      method: "GET",
+      url: "/workspaces/by-slug/acme",
+      headers: authed,
+    });
+    expect(res.statusCode).toBe(200);
+    expect(workspaces.getBySlug).toHaveBeenCalledWith("user_1", "acme");
+    expect(workspaces.get).not.toHaveBeenCalled();
+  });
+
+  it("rejects a malformed slug with 400", async () => {
+    const workspaces = await build();
+    const res = await app.inject({
+      method: "GET",
+      url: "/workspaces/by-slug/Bad_Slug",
+      headers: authed,
+    });
+    expect(res.statusCode).toBe(400);
+    expect(workspaces.getBySlug).not.toHaveBeenCalled();
   });
 });
 

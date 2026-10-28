@@ -140,6 +140,24 @@ export class WorkspaceService {
   }
 
   /**
+   * Resolves a workspace by its URL slug for the caller (backs the `[workspaceSlug]` route).
+   *
+   * An unknown slug and a slug the caller may not access both produce the same 404, so the
+   * endpoint cannot be used to discover which slugs exist in other tenants.
+   *
+   * @param userId - Authenticated caller.
+   * @param slug - Workspace slug from the URL.
+   * @returns The workspace with the caller role.
+   * @throws AppError 404 `WORKSPACE_NOT_FOUND` when missing or the caller is not a member.
+   */
+  async getBySlug(userId: string, slug: string): Promise<WorkspaceDto> {
+    const workspace = await this.deps.prisma.workspace.findUnique({ where: { slug } });
+    if (!workspace) throw new AppError(404, "WORKSPACE_NOT_FOUND", "Workspace not found.");
+    const role = await this.deps.guard.requireRole(userId, workspace.id, "VIEWER");
+    return { id: workspace.id, name: workspace.name, slug: workspace.slug, role };
+  }
+
+  /**
    * Lists members of a workspace.
    *
    * @param userId - Authenticated caller (any role may view the roster).

@@ -249,6 +249,34 @@ describe.skipIf(!databaseUrl)("Stage 1 exit criteria (real PostgreSQL)", () => {
     });
   });
 
+  describe("slug resolution", () => {
+    it("resolves a member workspace by slug with their role", async () => {
+      const res = await app.inject({
+        method: "GET",
+        url: `/workspaces/by-slug/it-${run}`,
+        headers: bearer(viewer),
+      });
+      expect(res.statusCode).toBe(200);
+      expect(res.json()).toMatchObject({ id: workspaceId, slug: `it-${run}`, role: "VIEWER" });
+    });
+
+    it("gives a non-member the same 404 as an unknown slug", async () => {
+      const existing = await app.inject({
+        method: "GET",
+        url: `/workspaces/by-slug/it-${run}`,
+        headers: bearer(outsider),
+      });
+      const missing = await app.inject({
+        method: "GET",
+        url: `/workspaces/by-slug/missing-${run}`,
+        headers: bearer(outsider),
+      });
+      expect(existing.statusCode).toBe(404);
+      expect(missing.statusCode).toBe(404);
+      expect(existing.json()).toEqual(missing.json());
+    });
+  });
+
   describe("cross-tenant isolation", () => {
     it("non-members get 404 on every workspace route of another tenant", async () => {
       const probes = [

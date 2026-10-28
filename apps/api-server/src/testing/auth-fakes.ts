@@ -47,6 +47,7 @@ export function createFakeWorkspaces() {
       nextCursor: null,
     })),
     get: vi.fn<WorkspaceUseCases["get"]>(async () => workspace),
+    getBySlug: vi.fn<WorkspaceUseCases["getBySlug"]>(async () => workspace),
     listMembers: vi.fn<WorkspaceUseCases["listMembers"]>(async () => ({
       items: [member],
       nextCursor: null,

@@ -138,6 +138,40 @@ describe("get", () => {
   });
 });
 
+describe("getBySlug", () => {
+  it("returns the workspace with the caller role", async () => {
+    const { service, db, guard } = setup("ADMIN");
+    db.workspace.findUnique.mockResolvedValue({ id: "w1", name: "Acme", slug: "acme" });
+    expect(await service.getBySlug("u1", "acme")).toEqual({
+      id: "w1",
+      name: "Acme",
+      slug: "acme",
+      role: "ADMIN",
+    });
+    expect(db.workspace.findUnique).toHaveBeenCalledWith({ where: { slug: "acme" } });
+    expect(guard.requireRole).toHaveBeenCalledWith("u1", "w1", "VIEWER");
+  });
+
+  it("returns 404 for an unknown slug without consulting the guard", async () => {
+    const { service, db, guard } = setup();
+    db.workspace.findUnique.mockResolvedValue(null);
+    await expect(service.getBySlug("u1", "nope")).rejects.toMatchObject({
+      statusCode: 404,
+      code: "WORKSPACE_NOT_FOUND",
+    });
+    expect(guard.requireRole).not.toHaveBeenCalled();
+  });
+
+  it("returns the identical 404 for a non-member of an existing workspace", async () => {
+    const { service, db } = setup("outsider");
+    db.workspace.findUnique.mockResolvedValue({ id: "w1", name: "Acme", slug: "acme" });
+    await expect(service.getBySlug("u1", "acme")).rejects.toMatchObject({
+      statusCode: 404,
+      code: "WORKSPACE_NOT_FOUND",
+    });
+  });
+});
+
 describe("listMembers", () => {
   it("requires membership, filters by workspace and maps members", async () => {
     const { service, db, guard } = setup("VIEWER");

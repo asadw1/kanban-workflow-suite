@@ -12,6 +12,7 @@ import {
   CreateWorkspaceRequestSchema,
   InviteMemberRequestSchema,
   PaginationQuerySchema,
+  WorkspaceSlugSchema,
 } from "shared-types";
 import { requireAuth } from "@/middlewares/authenticate";
 import type { WorkspaceService } from "@/services/workspace.service";
@@ -19,7 +20,13 @@ import type { WorkspaceService } from "@/services/workspace.service";
 /** The slice of {@link WorkspaceService} the controller depends on (Interface Segregation). */
 export type WorkspaceUseCases = Pick<
   WorkspaceService,
-  "create" | "listForUser" | "get" | "listMembers" | "inviteMember" | "changeMemberRole"
+  | "create"
+  | "listForUser"
+  | "get"
+  | "getBySlug"
+  | "listMembers"
+  | "inviteMember"
+  | "changeMemberRole"
 >;
 
 /** Collaborators for {@link registerWorkspaceRoutes}. */
@@ -30,11 +37,12 @@ export interface WorkspaceRouteOptions {
 
 const IdSchema = z.string().min(1).max(64);
 const WorkspaceParams = z.object({ workspaceId: IdSchema });
+const SlugParams = z.object({ slug: WorkspaceSlugSchema });
 const MemberParams = z.object({ workspaceId: IdSchema, memberId: IdSchema });
 
 /**
  * Registers workspace and member routes:
- * `POST/GET /workspaces`, `GET /workspaces/:workspaceId`,
+ * `POST/GET /workspaces`, `GET /workspaces/by-slug/:slug`, `GET /workspaces/:workspaceId`,
  * `GET/POST /workspaces/:workspaceId/members`, `PATCH /workspaces/:workspaceId/members/:memberId`.
  *
  * @param app - Fastify instance.
@@ -62,6 +70,12 @@ export function registerWorkspaceRoutes(
     scope.get("/workspaces", async (request) => {
       const query = PaginationQuerySchema.parse(request.query);
       return workspaces.listForUser(requireAuth(request).userId, query);
+    });
+
+    // Static segment, so it takes precedence over the `:workspaceId` parameter route below.
+    scope.get("/workspaces/by-slug/:slug", async (request) => {
+      const { slug } = SlugParams.parse(request.params);
+      return workspaces.getBySlug(requireAuth(request).userId, slug);
     });
 
     scope.get("/workspaces/:workspaceId", async (request) => {
