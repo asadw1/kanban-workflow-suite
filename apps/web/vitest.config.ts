@@ -10,6 +10,11 @@ export default defineConfig({
   resolve: { alias: { "@": fileURLToPath(new URL("./", import.meta.url)) } },
   test: {
     environment: "node",
+    // `shared/services/env.ts` validates these at import time, so every test run needs them.
+    env: {
+      NEXT_PUBLIC_API_URL: "http://localhost:4000",
+      NEXT_PUBLIC_SOCKET_URL: "http://localhost:4000",
+    },
     include: ["{shared,stores,components,app}/**/*.test.{ts,tsx}"],
   },
 });
