@@ -4,6 +4,7 @@
  * here by later Stage 1 roadmap items.
  */
 import type { ReactNode } from "react";
+import { AppProviders } from "@/shared/components/providers/app-providers";
 import "./globals.css";
 
 /** Document metadata applied to every route. */
@@ -21,7 +22,9 @@ export const metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en">
-      <body>{children}</body>
+      <body>
+        <AppProviders>{children}</AppProviders>
+      </body>
     </html>
   );
 }

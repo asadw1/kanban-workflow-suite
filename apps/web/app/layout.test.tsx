@@ -3,8 +3,14 @@
  * @description Tests for the root layout: document shell and exported metadata.
  */
 import { renderToStaticMarkup } from "react-dom/server";
-import { describe, expect, it } from "vitest";
+import type { ReactNode } from "react";
+import { describe, expect, it, vi } from "vitest";
 import RootLayout, { metadata } from "@/app/layout";
+
+// The provider tree has its own tests; here it is replaced by a transparent stub.
+vi.mock("@/shared/components/providers/app-providers", () => ({
+  AppProviders: ({ children }: { children: ReactNode }) => <>{children}</>,
+}));
 
 describe("RootLayout", () => {
   it("renders an English document wrapping its children", () => {
