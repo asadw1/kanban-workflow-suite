@@ -27,6 +27,8 @@ export default defineConfig({
         "**/*.test.{ts,tsx}",
         "components/ui/**",
         "**/*.d.ts",
+        // Type-only modules have no runtime code to cover.
+        "**/*.types.ts",
         // Test support code, not product code.
         "shared/testing/**",
       ],
