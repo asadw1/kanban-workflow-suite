@@ -10,6 +10,6 @@ export default defineConfig({
   resolve: { alias: { "@": fileURLToPath(new URL("./", import.meta.url)) } },
   test: {
     environment: "node",
-    include: ["{lib,hooks,stores,components}/**/*.test.{ts,tsx}"],
+    include: ["{shared,stores,components,app}/**/*.test.{ts,tsx}"],
   },
 });

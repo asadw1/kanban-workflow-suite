@@ -3,7 +3,7 @@
  * @description Unit tests for public environment validation in the web app.
  */
 import { describe, expect, it } from "vitest";
-import { parsePublicEnv } from "@/lib/env";
+import { parsePublicEnv } from "@/shared/services/env";
 
 describe("parsePublicEnv", () => {
   it("accepts valid URLs", () => {
