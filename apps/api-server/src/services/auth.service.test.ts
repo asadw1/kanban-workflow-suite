@@ -16,6 +16,7 @@ interface TokenRow {
   userId: string;
   expiresAt: Date;
   revokedAt: Date | null;
+  rotatedAt: Date | null;
 }
 
 /** Minimal in-memory stand-in for the Prisma calls AuthService makes. */
@@ -52,11 +53,13 @@ function createFakePrisma() {
       }),
     },
     refreshToken: {
-      create: vi.fn(async ({ data }: { data: Omit<TokenRow, "id" | "revokedAt"> }) => {
-        const row = { id: `rt_${++seq}`, revokedAt: null, ...data };
-        tokens.push(row);
-        return row;
-      }),
+      create: vi.fn(
+        async ({ data }: { data: Omit<TokenRow, "id" | "revokedAt" | "rotatedAt"> }) => {
+          const row = { id: `rt_${++seq}`, revokedAt: null, rotatedAt: null, ...data };
+          tokens.push(row);
+          return row;
+        },
+      ),
       findUnique: vi.fn(async ({ where }: { where: { tokenHash: string } }) => {
         const row = tokens.find((t) => t.tokenHash === where.tokenHash);
         if (!row) return null;
@@ -85,7 +88,7 @@ function first<T>(items: T[]): T {
 const T0 = new Date("2026-10-27T10:00:00Z");
 const DAY = 86_400_000;
 
-function setup() {
+function setup(overrides: { reuseGraceMs?: number } = {}) {
   const db = createFakePrisma();
   let now = T0;
   let counter = 0;
@@ -96,6 +99,7 @@ function setup() {
     refreshTtlMs: 30 * DAY,
     now: () => now,
     generateRefreshToken: () => `raw-token-${++counter}`,
+    ...overrides,
   });
   return {
     ...db,
@@ -215,21 +219,56 @@ describe("AuthService.refresh", () => {
     });
   });
 
-  it("treats reuse of a rotated token as theft and revokes the whole family", async () => {
+  it("treats a duplicate within the grace window as a retryable 409 and keeps the session", async () => {
     const { service, tokens } = setup();
-    const first = await service.register(credentials);
-    const second = await service.refresh(first.refreshToken);
-    await expect(service.refresh(first.refreshToken)).rejects.toMatchObject({
+    const original = await service.register(credentials);
+    const rotated = await service.refresh(original.refreshToken);
+    // A second tab replays the old cookie a moment later.
+    await expect(service.refresh(original.refreshToken)).rejects.toMatchObject({
+      statusCode: 409,
+      code: "REFRESH_IN_PROGRESS",
+    });
+    // Nothing was revoked: the newest token still works.
+    expect(tokens.filter((t) => t.revokedAt === null)).toHaveLength(1);
+    await expect(service.refresh(rotated.refreshToken)).resolves.toBeDefined();
+  });
+
+  it("treats reuse after the grace window as theft and revokes the whole family", async () => {
+    const { service, tokens, advance } = setup();
+    const original = await service.register(credentials);
+    const rotated = await service.refresh(original.refreshToken);
+    advance(11_000);
+    await expect(service.refresh(original.refreshToken)).rejects.toMatchObject({
+      statusCode: 401,
       code: "INVALID_REFRESH_TOKEN",
     });
     expect(tokens.every((t) => t.revokedAt !== null)).toBe(true);
     // The legitimate holder of the newest token is cut off too.
-    await expect(service.refresh(second.refreshToken)).rejects.toMatchObject({
+    await expect(service.refresh(rotated.refreshToken)).rejects.toMatchObject({
       code: "INVALID_REFRESH_TOKEN",
     });
   });
 
-  it("treats losing a concurrent rotation race as reuse", async () => {
+  it("honours a custom grace window", async () => {
+    const { service, advance } = setup({ reuseGraceMs: 1000 });
+    const original = await service.register(credentials);
+    await service.refresh(original.refreshToken);
+    advance(1500);
+    await expect(service.refresh(original.refreshToken)).rejects.toMatchObject({
+      code: "INVALID_REFRESH_TOKEN",
+    });
+  });
+
+  it("never grants grace to a token revoked by logout", async () => {
+    const { service } = setup();
+    const session = await service.register(credentials);
+    await service.logout(session.refreshToken);
+    await expect(service.refresh(session.refreshToken)).rejects.toMatchObject({
+      statusCode: 401,
+    });
+  });
+
+  it("answers a lost concurrent rotation race with 409 and does not revoke", async () => {
     const { service, tokens, users, fake } = setup();
     const session = await service.register(credentials);
     // Another request claims the token between our read and our conditional update.
@@ -237,12 +276,12 @@ describe("AuthService.refresh", () => {
       ...first(tokens),
       user: first(users),
     }));
-    first(tokens).revokedAt = null;
     fake.refreshToken.updateMany.mockImplementationOnce(async () => ({ count: 0 }));
     await expect(service.refresh(session.refreshToken)).rejects.toMatchObject({
-      code: "INVALID_REFRESH_TOKEN",
+      statusCode: 409,
+      code: "REFRESH_IN_PROGRESS",
     });
-    expect(tokens.every((t) => t.revokedAt !== null)).toBe(true);
+    expect(first(tokens).revokedAt).toBeNull();
   });
 });
 

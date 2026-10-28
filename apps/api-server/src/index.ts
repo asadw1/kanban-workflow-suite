@@ -27,6 +27,7 @@ const auth = new AuthService({
   hasher: new ScryptPasswordHasher(),
   tokens: accessTokens,
   refreshTtlMs: env.REFRESH_TOKEN_TTL_DAYS * 24 * 60 * 60 * 1000,
+  reuseGraceMs: env.REFRESH_REUSE_GRACE_SECONDS * 1000,
 });
 const workspaces = new WorkspaceService({ prisma, guard: new WorkspaceAccessService(prisma) });
 const app = await buildApp(env, {

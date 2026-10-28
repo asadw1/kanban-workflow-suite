@@ -149,6 +149,21 @@ describe("POST /auth/refresh", () => {
   });
 });
 
+describe("POST /auth/refresh duplicates", () => {
+  it("returns 409 without clearing the cookie the winning request just set", async () => {
+    const auth = await build();
+    auth.refresh.mockRejectedValueOnce(new AppError(409, "REFRESH_IN_PROGRESS", "retry"));
+    const res = await app.inject({
+      method: "POST",
+      url: "/auth/refresh",
+      cookies: { refresh_token: "old" },
+    });
+    expect(res.statusCode).toBe(409);
+    expect(res.json().code).toBe("REFRESH_IN_PROGRESS");
+    expect(res.cookies).toHaveLength(0);
+  });
+});
+
 describe("POST /auth/logout", () => {
   it("revokes the session and clears the cookie", async () => {
     const auth = await build();

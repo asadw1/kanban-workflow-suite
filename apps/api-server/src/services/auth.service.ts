@@ -33,6 +33,11 @@ export interface AuthServiceDeps {
   tokens: AccessTokenService;
   /** Refresh token lifetime in milliseconds. */
   refreshTtlMs: number;
+  /**
+   * How long after rotation a replay of the old token is treated as a harmless duplicate
+   * (several browser tabs refreshing together) rather than theft. Default 10 seconds.
+   */
+  reuseGraceMs?: number;
   /** Clock, injected so expiry logic is deterministic in tests. */
   now?: () => Date;
   /** Generator of raw refresh tokens, injected for deterministic tests. */
@@ -42,6 +47,16 @@ export interface AuthServiceDeps {
 /** One error for every refresh failure so callers cannot tell why a token was refused. */
 const INVALID_REFRESH = () =>
   new AppError(401, "INVALID_REFRESH_TOKEN", "Refresh token is invalid or expired.");
+
+/** Default grace window for duplicate refreshes; see {@link AuthServiceDeps.reuseGraceMs}. */
+const DEFAULT_REUSE_GRACE_MS = 10_000;
+
+/**
+ * Duplicate refresh inside the grace window. Retryable: by the time the client retries, the
+ * browser cookie jar already holds the token the winning request rotated to.
+ */
+const REFRESH_IN_PROGRESS = () =>
+  new AppError(409, "REFRESH_IN_PROGRESS", "Another refresh just completed. Retry the request.");
 
 /**
  * Hashes a raw refresh token for storage and lookup.
@@ -122,13 +137,16 @@ export class AuthService {
    * Exchanges a refresh token for a new access token and a rotated refresh token.
    *
    * Concurrency invariant: rotation claims the old token with a conditional update
-   * (`revokedAt IS NULL`), so two simultaneous refreshes cannot both succeed. The loser is
-   * treated as token reuse. Presenting an already-revoked token is also treated as theft:
-   * the whole family is revoked, forcing a fresh login on every device holding that chain.
+   * (`revokedAt IS NULL`), so two simultaneous refreshes cannot both succeed. A loser, or a
+   * replay within the grace window after rotation, is a duplicate (typically another browser
+   * tab) and gets a retryable 409 without touching the session. Replaying a rotated token
+   * after the window, or any token revoked by logout or an earlier theft response, is treated
+   * as theft: the whole family is revoked, forcing a fresh login on every device.
    *
    * @param rawToken - Refresh token from the cookie.
    * @returns A new session continuing the same family.
-   * @throws AppError 401 `INVALID_REFRESH_TOKEN` when unknown, expired, revoked or reused.
+   * @throws AppError 401 `INVALID_REFRESH_TOKEN` when unknown, expired, revoked or reused; 409
+   * `REFRESH_IN_PROGRESS` for a duplicate within the grace window (retry the request).
    */
   async refresh(rawToken: string): Promise<AuthSession> {
     const { prisma } = this.deps;
@@ -139,25 +157,31 @@ export class AuthService {
     if (!record) throw INVALID_REFRESH();
 
     if (record.revokedAt) {
+      // Only a token that was rotated (not logged out or revoked) can be a benign duplicate.
+      const graceMs = this.deps.reuseGraceMs ?? DEFAULT_REUSE_GRACE_MS;
+      if (record.rotatedAt && this.now().getTime() - record.rotatedAt.getTime() <= graceMs) {
+        throw REFRESH_IN_PROGRESS();
+      }
       await this.revokeFamily(record.familyId);
       throw INVALID_REFRESH();
     }
     if (record.expiresAt <= this.now()) throw INVALID_REFRESH();
 
     const rotated = await prisma.$transaction(async (tx) => {
+      const now = this.now();
       const claimed = await tx.refreshToken.updateMany({
         where: { id: record.id, revokedAt: null },
-        data: { revokedAt: this.now() },
+        // rotatedAt (as opposed to a bare revokedAt) is what makes a replay eligible for grace.
+        data: { revokedAt: now, rotatedAt: now },
       });
       if (claimed.count === 0) return null;
       return this.createRefreshToken(tx, record.userId, record.familyId);
     });
 
     if (!rotated) {
-      // Lost a race with another refresh using the same token: treat as reuse. Done outside
-      // the transaction so the revocation is not rolled back with it.
-      await this.revokeFamily(record.familyId);
-      throw INVALID_REFRESH();
+      // Lost a race by milliseconds with a concurrent refresh of the same token. It is a
+      // duplicate, not theft; if the family was actually revoked meanwhile, the retry gets 401.
+      throw REFRESH_IN_PROGRESS();
     }
     return this.buildSession(record.user, rotated);
   }

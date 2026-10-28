@@ -80,8 +80,12 @@ export function registerAuthRoutes(app: FastifyInstance, options: AuthRouteOptio
     try {
       return respondWithSession(reply, await auth.refresh(token));
     } catch (error) {
-      // A refused token is dead; clear it so the browser stops replaying it.
-      reply.clearCookie(REFRESH_COOKIE, { path: COOKIE_PATH });
+      // A refused token is dead; clear it so the browser stops replaying it. A 409 duplicate
+      // is the exception: the winning request just set a fresh cookie, and clearing here
+      // would delete it and log the user out.
+      if (!(error instanceof AppError && error.code === "REFRESH_IN_PROGRESS")) {
+        reply.clearCookie(REFRESH_COOKIE, { path: COOKIE_PATH });
+      }
       throw error;
     }
   });

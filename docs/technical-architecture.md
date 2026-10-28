@@ -323,7 +323,7 @@ The entity model, relationships, constraints, and indexing strategy are defined 
 ### 9.1 Authentication
 
 - Short-lived signed JWT access tokens (HS256, 15 minutes), verified on both REST requests and the Socket.io handshake. They are stateless and are not individually revocable; their short life bounds the exposure.
-- Sessions are kept alive by opaque refresh tokens (30 days) delivered only in an `httpOnly`, `SameSite=Strict`, path-scoped cookie. Only the SHA-256 of each token is stored (`RefreshToken` table), tokens rotate on every use, and presenting an already-rotated token revokes the whole session family (ADR-011).
+- Sessions are kept alive by opaque refresh tokens (30 days) delivered only in an `httpOnly`, `SameSite=Strict`, path-scoped cookie. Only the SHA-256 of each token is stored (`RefreshToken` table), tokens rotate on every use, and presenting an already-rotated token revokes the whole session family (ADR-011). A replay within a 10-second grace window (several tabs refreshing together) is answered with a retryable 409 instead, so multi-tab reloads do not log the user out.
 - Authorization never trusts the token for roles: the `WorkspaceMember` row is read on every request, so role changes and removals apply immediately.
 - Passwords are hashed with scrypt (N=32768, r=8, p=1, per-hash salt, parameters stored in the hash so cost can be raised later).
 

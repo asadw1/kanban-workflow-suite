@@ -20,6 +20,8 @@ const EnvSchema = z
     JWT_ACCESS_TTL_SECONDS: z.coerce.number().int().min(60).max(3600).default(900),
     /** Refresh token lifetime; a session ends after this long without a refresh. */
     REFRESH_TOKEN_TTL_DAYS: z.coerce.number().int().min(1).max(90).default(30),
+    /** Window in which a replayed, just-rotated refresh token is a duplicate, not theft. */
+    REFRESH_REUSE_GRACE_SECONDS: z.coerce.number().int().min(0).max(60).default(10),
     /** Browser origin allowed by CORS and the Socket.io handshake. */
     WEB_ORIGIN: z.string().url().default("http://localhost:3000"),
     LOG_LEVEL: z

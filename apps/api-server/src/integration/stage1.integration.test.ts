@@ -19,6 +19,8 @@ import { WorkspaceService } from "@/services/workspace.service";
 
 const databaseUrl = process.env.DATABASE_URL;
 const run = randomBytes(4).toString("hex");
+/** Short grace window so the theft path can be exercised without a long sleep. */
+const REUSE_GRACE_MS = 300;
 const prisma = createPrismaClient(databaseUrl);
 
 let app: FastifyInstance;
@@ -68,6 +70,7 @@ describe.skipIf(!databaseUrl)("Stage 1 exit criteria (real PostgreSQL)", () => {
           hasher: new ScryptPasswordHasher({ N: 1024, r: 8, p: 1 }),
           tokens: accessTokens,
           refreshTtlMs: 86_400_000,
+          reuseGraceMs: REUSE_GRACE_MS,
         }),
         workspaces: new WorkspaceService({ prisma, guard: new WorkspaceAccessService(prisma) }),
       },
@@ -315,6 +318,18 @@ describe.skipIf(!databaseUrl)("Stage 1 exit criteria (real PostgreSQL)", () => {
       const second = rotated.cookies.find((c) => c.name === "refresh_token")?.value ?? "";
       expect(second).not.toBe(first);
 
+      // A second tab replaying the old cookie inside the grace window is a duplicate: 409,
+      // no cookie change, and the session survives.
+      const duplicate = await app.inject({
+        method: "POST",
+        url: "/auth/refresh",
+        cookies: { refresh_token: first },
+      });
+      expect(duplicate.statusCode).toBe(409);
+      expect(duplicate.cookies).toHaveLength(0);
+
+      // Replaying the old token after the window is theft.
+      await new Promise((resolve) => setTimeout(resolve, REUSE_GRACE_MS + 100));
       const replay = await app.inject({
         method: "POST",
         url: "/auth/refresh",
@@ -329,6 +344,22 @@ describe.skipIf(!databaseUrl)("Stage 1 exit criteria (real PostgreSQL)", () => {
         cookies: { refresh_token: second },
       });
       expect(afterTheft.statusCode).toBe(401);
+    });
+
+    it("lets simultaneous refreshes with one cookie succeed once and report 409 for the rest", async () => {
+      const login = await app.inject({
+        method: "POST",
+        url: "/auth/login",
+        payload: { email: member.email, password: "integration-pass" },
+      });
+      const cookie = login.cookies.find((c) => c.name === "refresh_token")?.value ?? "";
+      const results = await Promise.all(
+        [1, 2, 3].map(() =>
+          app.inject({ method: "POST", url: "/auth/refresh", cookies: { refresh_token: cookie } }),
+        ),
+      );
+      const statuses = results.map((r) => r.statusCode).sort();
+      expect(statuses).toEqual([200, 409, 409]);
     });
 
     it("rejects a wrong password and a forged bearer token", async () => {
