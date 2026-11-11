@@ -7,30 +7,16 @@ updates:
       interval: weekly
     open-pull-requests-limit: 5
     groups:
-      # One PR for all minor/patch bumps; majors arrive individually for deliberate review.
+      # One PR for all minor/patch bumps.
       minor-and-patch:
         update-types: [minor, patch]
     ignore:
-      # Prisma 7 is a migration (new client generator and config), so it is scheduled work,
-      # not a drive-by bump. Revisit deliberately and remove this rule when ready.
-      - dependency-name: prisma
-        update-types: [version-update:semver-major]
-      - dependency-name: "@prisma/client"
-        update-types: [version-update:semver-major]
-      # Node typings must match the Node runtime we target (20), not the newest Node major.
-      - dependency-name: "@types/node"
-        update-types: [version-update:semver-major]
-      # Test runner majors move together with the coverage provider and need their own
-      # migration, and TypeScript majors must wait for typescript-eslint support. Revisit
-      # deliberately and remove these rules when scheduled.
-      - dependency-name: vitest
-        update-types: [version-update:semver-major]
-      - dependency-name: "@vitest/coverage-v8"
-        update-types: [version-update:semver-major]
-      - dependency-name: typescript
-        update-types: [version-update:semver-major]
-      # The Next ESLint plugin must track the installed Next.js major, so it moves with Next.
-      - dependency-name: "@next/eslint-plugin-next"
+      # Major npm upgrades are done deliberately, in batches we choose, not as drive-by PRs.
+      # Many majors are coupled (prisma 7 migration, next with its eslint plugin, vitest with
+      # its coverage provider, typescript with typescript-eslint, @types/node pinned to the
+      # Node 20 runtime, @hookform/resolvers with the zod and react-hook-form versions), so
+      # upgrading them one PR at a time is noise or risk. Remove this rule to resume them.
+      - dependency-name: "*"
         update-types: [version-update:semver-major]
 
   - package-ecosystem: github-actions
