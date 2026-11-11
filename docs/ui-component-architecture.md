@@ -19,6 +19,7 @@ This document defines the shared components, hooks, and services of the web appl
 4. **UI gating is a convenience, not security.** Hiding a control based on role improves usability. The server still enforces every permission.
 5. **Server Components by default.** Use Client Components only for interactivity. Shared components that need state or effects are marked `"use client"` individually, and pure display components stay server-compatible.
 6. **Depend on abstractions.** Components receive data and callbacks through props or hooks, and do not import the API client or socket directly. This keeps them testable and reusable.
+7. **Design tokens only, no inline styles.** All styling is Tailwind utility classes that resolve to the semantic tokens defined in `app/globals.css` (`bg-primary`, `text-muted-foreground`, `border-border`, `bg-overlay`). Never use the JSX `style` prop, raw colors (`text-white`, `bg-black/50`, `bg-red-500`, hex or `oklch` literals in components), or arbitrary color values. A missing color is a missing token: add it to `:root` and `.dark` in `globals.css` and map it in `@theme inline`, so light and dark mode and re-theming stay a single edit. ESLint bans the `style` prop for `apps/web`. Third-party libraries that need custom properties (for example Sonner) get them from a CSS rule built on the tokens, not from an inline style. Vendored shadcn files may be edited only to restore this rule.
 
 ---
 

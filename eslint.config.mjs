@@ -59,6 +59,16 @@ export default tseslint.config(
     rules: {
       ...reactHooks.configs.recommended.rules,
       ...nextPlugin.configs["core-web-vitals"].rules,
+      // Design-token rule: all styling goes through Tailwind classes backed by the tokens in
+      // app/globals.css. Inline `style` props bypass the tokens (and dark mode), so they are banned.
+      "no-restricted-syntax": [
+        "error",
+        {
+          selector: "JSXAttribute[name.name='style']",
+          message:
+            "No inline styles. Use Tailwind classes backed by design tokens (see app/globals.css).",
+        },
+      ],
     },
   },
 
