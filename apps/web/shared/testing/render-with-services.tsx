@@ -32,6 +32,7 @@ export function createFakeServices(overrides: Partial<AppServices> = {}): AppSer
     }),
     http: unusedHttp,
     authHttp: unusedHttp,
+    notifier: { success: () => undefined, info: () => undefined, error: () => undefined },
     ...overrides,
   };
 }

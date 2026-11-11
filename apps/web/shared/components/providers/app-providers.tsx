@@ -1,13 +1,16 @@
 /**
  * @file app-providers.tsx
  * @description Client-side provider tree mounted once in the root layout: injected services,
- * the TanStack Query client, and the one-time session bootstrap that restores a signed-in
+ * the TanStack Query client, the theme (light/dark) provider, the global toaster, and the
+ * one-time session bootstrap that restores a signed-in
  * user from the refresh cookie after a page load.
  */
 "use client";
 
 import { QueryClientProvider } from "@tanstack/react-query";
+import { ThemeProvider } from "next-themes";
 import { useEffect, useState, type ReactNode } from "react";
+import { Toaster } from "@/components/ui/sonner";
 import { ServicesContext } from "@/shared/hooks/use-services";
 import { createAppServices, type AppServices } from "@/shared/services/create-app-services";
 import { createQueryClient } from "@/shared/services/create-query-client";
@@ -40,8 +43,16 @@ export function AppProviders({ children, services: provided }: AppProvidersProps
   }, [services]);
 
   return (
-    <ServicesContext.Provider value={services}>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    </ServicesContext.Provider>
+    // ThemeProvider toggles the `.dark` class on <html> from the OS setting, which is what the
+    // dark design tokens in globals.css key off. The Toaster is mounted once here so any
+    // component can notify through `useNotifier` without rendering its own.
+    <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
+      <ServicesContext.Provider value={services}>
+        <QueryClientProvider client={queryClient}>
+          {children}
+          <Toaster />
+        </QueryClientProvider>
+      </ServicesContext.Provider>
+    </ThemeProvider>
   );
 }

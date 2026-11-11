@@ -37,6 +37,15 @@ describe("AppProviders", () => {
     expect(bootstrap).toHaveBeenCalledOnce();
   });
 
+  it("mounts the global toaster so notifications can render", () => {
+    render(
+      <AppProviders services={createFakeServices()}>
+        <p>child</p>
+      </AppProviders>,
+    );
+    expect(screen.getByLabelText(/notifications/i)).toBeInTheDocument();
+  });
+
   it("builds default services from the public environment", () => {
     render(
       <AppProviders>

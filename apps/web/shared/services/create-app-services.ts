@@ -9,7 +9,9 @@ import { BrowserCrossTabCoordinator } from "@/shared/services/browser-cross-tab-
 import type { CrossTabCoordinator } from "@/shared/services/cross-tab-coordinator.types";
 import { FetchHttpClient } from "@/shared/services/fetch-http-client";
 import type { HttpClient } from "@/shared/services/http-client.types";
+import type { Notifier } from "@/shared/services/notifier.types";
 import { SessionManager } from "@/shared/services/session-manager";
+import { SonnerNotifier } from "@/shared/services/sonner-notifier";
 
 /** Everything the UI data layer needs. */
 export interface AppServices {
@@ -21,6 +23,8 @@ export interface AppServices {
    * refresh-and-retry, which is what prevents the refresh call from recursing into itself.
    */
   authHttp: HttpClient;
+  /** User notifications (toasts); components use it through `useNotifier`. */
+  notifier: Notifier;
 }
 
 /** Inputs for {@link createAppServices}. */
@@ -66,5 +70,5 @@ export function createAppServices(config: AppServicesConfig): AppServices {
     fetchImpl: config.fetchImpl,
   });
 
-  return { session, http, authHttp };
+  return { session, http, authHttp, notifier: new SonnerNotifier() };
 }

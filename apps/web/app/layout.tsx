@@ -21,7 +21,9 @@ export const metadata = {
  */
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
+    // suppressHydrationWarning: next-themes sets the `class` on <html> before hydration to avoid
+    // a light/dark flash, which would otherwise log a (harmless) hydration mismatch.
+    <html lang="en" suppressHydrationWarning>
       <body>
         <AppProviders>{children}</AppProviders>
       </body>
