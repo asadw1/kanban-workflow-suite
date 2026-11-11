@@ -6,6 +6,7 @@ import { render, screen } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { ConfirmDialog, type ConfirmDialogProps } from "@/shared/components/confirm-dialog";
+import { expectNoA11yViolations } from "@/shared/testing/expect-accessible";
 
 function setup(props: Partial<ConfirmDialogProps> = {}) {
   const onConfirm = vi.fn();
@@ -53,5 +54,11 @@ describe("ConfirmDialog", () => {
     setup({ isPending: true });
     expect(screen.getByRole("button", { name: "Confirm" })).toBeDisabled();
     expect(screen.getByRole("button", { name: "Cancel" })).toBeDisabled();
+  });
+
+  it("has no WCAG violations while open", async () => {
+    setup();
+    // The dialog renders in a portal on <body>, outside the render container.
+    await expectNoA11yViolations(document.body);
   });
 });

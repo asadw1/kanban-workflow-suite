@@ -13,6 +13,7 @@
 import js from "@eslint/js";
 import nextPlugin from "@next/eslint-plugin-next";
 import prettierConfig from "eslint-config-prettier";
+import jsxA11y from "eslint-plugin-jsx-a11y";
 import reactHooks from "eslint-plugin-react-hooks";
 import globals from "globals";
 import tseslint from "typescript-eslint";
@@ -48,6 +49,19 @@ export default tseslint.config(
         "error",
         { argsIgnorePattern: "^_", varsIgnorePattern: "^_" },
       ],
+    },
+  },
+
+  {
+    // Accessibility (ADA / WCAG): static checks for labels, roles, alt text, keyboard handlers and
+    // ARIA misuse in JSX. Runtime checks live in each component test via expectNoA11yViolations.
+    ...jsxA11y.flatConfigs.recommended,
+    files: ["apps/web/**/*.{tsx,jsx}"],
+    rules: {
+      ...jsxA11y.flatConfigs.recommended.rules,
+      // Our components take a domain `role` prop (workspace role, for example `<RoleBadge role>`),
+      // which is unrelated to ARIA roles. Only validate `role` on real DOM elements.
+      "jsx-a11y/aria-role": ["error", { ignoreNonDOM: true }],
     },
   },
 

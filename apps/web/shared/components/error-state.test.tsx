@@ -7,6 +7,7 @@ import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
 import { ApiError } from "@/shared/services/api-error";
 import { ErrorState } from "@/shared/components/error-state";
+import { expectNoA11yViolations } from "@/shared/testing/expect-accessible";
 
 describe("ErrorState", () => {
   it("announces the message and code from an ApiError", () => {
@@ -28,5 +29,12 @@ describe("ErrorState", () => {
     render(<ErrorState error={{ message: "x", code: "Y" }} onRetry={onRetry} />);
     await userEvent.click(screen.getByRole("button", { name: "Try again" }));
     expect(onRetry).toHaveBeenCalledOnce();
+  });
+
+  it("has no WCAG violations", async () => {
+    const { container } = render(
+      <ErrorState error={{ message: "x", code: "Y" }} onRetry={() => undefined} />,
+    );
+    await expectNoA11yViolations(container);
   });
 });

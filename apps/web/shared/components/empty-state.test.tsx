@@ -5,6 +5,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { EmptyState } from "@/shared/components/empty-state";
+import { expectNoA11yViolations } from "@/shared/testing/expect-accessible";
 
 describe("EmptyState", () => {
   it("renders only the title when nothing else is given", () => {
@@ -26,5 +27,12 @@ describe("EmptyState", () => {
     expect(screen.getByText("Create the first card.")).toBeInTheDocument();
     expect(screen.getByTestId("icon")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Add card" })).toBeInTheDocument();
+  });
+
+  it("has no WCAG violations", async () => {
+    const { container } = render(
+      <EmptyState title="No cards" description="Create one." action={<button>Add card</button>} />,
+    );
+    await expectNoA11yViolations(container);
   });
 });

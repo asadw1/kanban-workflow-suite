@@ -49,6 +49,7 @@ These apply to all items below and are part of each stage's definition of done:
 - [ ] Every write path enforces RBAC and workspace scoping.
 - [ ] Unit tests cover new logic, and integration tests cover new endpoints and handlers.
 - [ ] Any new diagram is Mermaid, and affected docs under `docs/` are updated.
+- [ ] New UI meets ADA and WCAG 2.2 AA: keyboard operable, accessible names, sufficient contrast, and `expectNoA11yViolations` passes in its tests. Styling uses design tokens only, with no inline styles.
 
 ---
 

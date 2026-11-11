@@ -5,6 +5,7 @@
 import { render, screen } from "@testing-library/react";
 import { describe, expect, it } from "vitest";
 import { FormField } from "@/shared/components/form-field";
+import { expectNoA11yViolations } from "@/shared/testing/expect-accessible";
 
 const renderField = (props: { hint?: string; error?: string } = {}) =>
   render(
@@ -33,5 +34,13 @@ describe("FormField", () => {
     expect(input).toHaveAccessibleDescription("Enter a valid email");
     expect(screen.getByRole("alert")).toHaveTextContent("Enter a valid email");
     expect(screen.queryByText("We never share it.")).not.toBeInTheDocument();
+  });
+
+  it("has no WCAG violations with hint or error", async () => {
+    const withHint = renderField({ hint: "We never share it." });
+    await expectNoA11yViolations(withHint.container);
+    withHint.unmount();
+    const withError = renderField({ error: "Enter a valid email" });
+    await expectNoA11yViolations(withError.container);
   });
 });
