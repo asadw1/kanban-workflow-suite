@@ -1,0 +1,106 @@
+# CI pipeline: verifies every push to main and every pull request.
+#
+# Jobs run in parallel on separate runners:
+#   - verify:      format, lint, typecheck, unit tests with coverage gates, build
+#   - integration: API integration suite against a real PostgreSQL service container
+#
+# Nothing here deploys. Deployment lanes (dev/uat/preprod/prod) will be added later as
+# GitHub Environments with their own secrets and approval gates.
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+# Cancel superseded runs on the same ref so quick successive pushes do not queue up.
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+# Least privilege: CI only needs to read the repository.
+permissions:
+  contents: read
+
+env:
+  # Mirrors apps/web/.env.example; `next build` requires these public vars at build time.
+  NEXT_PUBLIC_API_URL: http://localhost:4000
+  NEXT_PUBLIC_SOCKET_URL: http://localhost:4000
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 8.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      # Restore Turborepo's local cache so unchanged packages skip build/test.
+      - uses: actions/cache@v4
+        with:
+          path: .turbo
+          key: turbo-${{ runner.os }}-${{ github.sha }}
+          restore-keys: turbo-${{ runner.os }}-
+
+      - run: pnpm install --frozen-lockfile
+
+      # The Prisma client must exist before typecheck, tests and build.
+      - run: pnpm --filter database db:generate
+
+      - run: pnpm format:check
+      - run: pnpm lint
+      - run: pnpm typecheck
+      # Coverage gates live in each package's vitest config; a miss fails the job.
+      - run: pnpm --filter shared-types test:coverage
+      - run: pnpm --filter api-server test:coverage
+      - run: pnpm --filter web test:coverage
+      - run: pnpm --filter database test
+      - run: pnpm build
+
+  integration:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      postgres:
+        image: postgres:15
+        env:
+          POSTGRES_USER: prisma
+          POSTGRES_PASSWORD: prisma
+          POSTGRES_DB: kanban_db
+        ports:
+          - 5432:5432
+        # Wait until Postgres accepts connections before steps run.
+        options: >-
+          --health-cmd "pg_isready -U prisma -d kanban_db"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgresql://prisma:prisma@localhost:5432/kanban_db?schema=public
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 8.15.0
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm --filter database db:generate
+
+      # Apply committed migrations (not `db push`) so CI proves the migration history is valid.
+      - run: pnpm --filter database exec prisma migrate deploy
+
+      - run: pnpm --filter api-server test:integration
