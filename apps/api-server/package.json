@@ -19,7 +19,7 @@
     "@fastify/helmet": "^13.0.0",
     "database": "workspace:*",
     "fastify": "^5.12.8",
-    "jose": "^5.9.0",
+    "jose": "^6.2.15",
     "shared-types": "workspace:*",
     "zod": "^3.24.0"
   },

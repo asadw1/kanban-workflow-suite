@@ -60,8 +60,8 @@ importers:
         specifier: ^5.12.8
         version: 5.12.8
       jose:
-        specifier: ^5.9.0
-        version: 5.10.0
+        specifier: ^6.2.15
+        version: 6.2.15
       shared-types:
         specifier: workspace:*
         version: link:../../packages/shared-types
@@ -5158,8 +5158,8 @@ packages:
     resolution: {integrity: sha512-AC/7JofJvZGrrneWNaEnJeOLUx+JlGt7tNa0wZiRPT4MY1wmfKjt2+6O2p2uz2+skll8OZZmJMNqeke7kKbNgQ==}
     hasBin: true
 
-  /jose@5.10.0:
-    resolution: {integrity: sha512-s+3Al/p9g32Iq+oqXxkW//7jk2Vig6FF1CFqzVXoTUXt2qz89YWbL+OwS17NFYEvxC35n0FKeGO2LGYSxeM2Gg==}
+  /jose@6.2.15:
+    resolution: {integrity: sha512-qdF6ewcZARtef63fJ9AKKZPgxw+t7USH6HLXYcD4CrdmSvDp79rpJSPFEKc90QBeGS63u1KQtN2MZQHC0yDIzA==}
     dev: false
 
   /joycon@3.1.1:
