@@ -243,17 +243,20 @@ sequenceDiagram
 
 ## 7. Services and Utilities (`shared/services/`, `shared/utils/`)
 
-| Module              | Responsibility                                                                                            |
-| ------------------- | --------------------------------------------------------------------------------------------------------- |
-| `apiClient`         | Typed fetch wrapper that attaches auth, parses the standard error shape, and validates responses with Zod |
-| `queryKeys`         | Central factory for TanStack Query keys. Keys are never written inline                                    |
-| `lexorank`          | Midpoint, before, after, first, last, and compare for fractional positions                                |
-| `socketClient`      | Typed Socket.io client built on the `shared-types` payload definitions                                    |
-| `permissions`       | Role-to-capability map used by `PermissionGate` and `usePermissions`                                      |
-| `format`            | Dates, numbers, file sizes, and pluralization                                                             |
-| `notifier`          | `Notifier` interface (`success`, `info`, `error`) over Sonner toasts, used through `useNotifier`          |
-| `fieldTypeRegistry` | See [section 5.1](#51-field-type-registry)                                                                |
-| `commandRegistry`   | See [section 5.2](#52-command-registry)                                                                   |
+| Module              | Responsibility                                                                                                      |
+| ------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| `apiClient`         | Typed fetch wrapper that attaches auth, parses the standard error shape, and validates responses with Zod           |
+| `queryKeys`         | Central factory for TanStack Query keys. Keys are never written inline                                              |
+| `lexorank`          | Midpoint, before, after, first, last, and compare for fractional positions                                          |
+| `socketClient`      | Typed Socket.io client built on the `shared-types` payload definitions                                              |
+| `permissions`       | Role-to-capability map used by `PermissionGate` and `usePermissions`                                                |
+| `format`            | Dates, numbers, file sizes, and pluralization                                                                       |
+| `routes`            | The single registry of URLs (static paths and builders such as `routes.workspace(slug)`) and `loginUrl`             |
+| `navigator`         | `AppNavigator` interface (`push`, `replace`, `back`, `pathname`) over the Next router, used through `useNavigation` |
+| `safe-redirect`     | `isSafeInternalPath` and `sanitizeNextPath`, the open-redirect guard for every `?next=` value                       |
+| `notifier`          | `Notifier` interface (`success`, `info`, `error`) over Sonner toasts, used through `useNotifier`                    |
+| `fieldTypeRegistry` | See [section 5.1](#51-field-type-registry)                                                                          |
+| `commandRegistry`   | See [section 5.2](#52-command-registry)                                                                             |
 
 `permissions` should be derived from the same capability definitions as the server's RBAC matrix, ideally exported from `packages/shared-types`, so the two cannot drift.
 
@@ -274,6 +277,13 @@ sequenceDiagram
 - UI-only state (sidebar collapse, view mode, cursor coordinates): Zustand only.
 - Form state: React Hook Form with a Zod resolver.
 - Never copy server data into Zustand.
+
+### 8.2a Constants and navigation
+
+- **No global `app.constants` file.** A single grab-bag file grows without bound, changes for unrelated reasons, and makes every module depend on every constant. Constants live next to the code that owns them: a feature's constants in its `components/<feature>/` folder, cross-feature ones in a small topic module (for example `shared/constants/storage-keys.ts`), and URLs only in `shared/services/routes.ts`.
+- Declare them as `as const` objects or string unions and derive types from them, so the value and its type cannot drift.
+- Values the API also uses (roles, error codes, event names) are defined once in `packages/shared-types` and imported, never redeclared in the web app. Environment values come only from the validated `shared/services/env.ts`.
+- **Never write a URL string inline.** Build links from `routes`, navigate through `useNavigation()` and not `next/navigation`, and validate any user-supplied return path with `sanitizeNextPath` before navigating to it.
 
 ### 8.3 Accessibility
 

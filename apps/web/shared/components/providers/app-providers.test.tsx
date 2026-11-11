@@ -22,6 +22,12 @@ function Probe() {
   );
 }
 
+// AppProviders mounts the Next navigation adapter, which needs the App Router; fake it here.
+vi.mock("next/navigation", () => ({
+  useRouter: () => ({ push: vi.fn(), replace: vi.fn(), back: vi.fn() }),
+  usePathname: () => "/",
+}));
+
 describe("AppProviders", () => {
   it("provides services and a query client, and restores the session once", async () => {
     const services = createFakeServices();

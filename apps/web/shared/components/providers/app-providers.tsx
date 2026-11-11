@@ -1,9 +1,9 @@
 /**
  * @file app-providers.tsx
  * @description Client-side provider tree mounted once in the root layout: injected services,
- * the TanStack Query client, the theme (light/dark) provider, the global toaster, and the
- * one-time session bootstrap that restores a signed-in
- * user from the refresh cookie after a page load.
+ * the TanStack Query client, the theme (light/dark) provider, the global toaster, the navigation
+ * adapter, and the one-time session bootstrap that restores a signed-in user from the refresh
+ * cookie after a page load.
  */
 "use client";
 
@@ -11,6 +11,7 @@ import { QueryClientProvider } from "@tanstack/react-query";
 import { ThemeProvider } from "next-themes";
 import { useEffect, useState, type ReactNode } from "react";
 import { Toaster } from "@/components/ui/sonner";
+import { NextNavigationProvider } from "@/shared/components/providers/next-navigation-provider";
 import { ServicesContext } from "@/shared/hooks/use-services";
 import { createAppServices, type AppServices } from "@/shared/services/create-app-services";
 import { createQueryClient } from "@/shared/services/create-query-client";
@@ -49,7 +50,7 @@ export function AppProviders({ children, services: provided }: AppProvidersProps
     <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
       <ServicesContext.Provider value={services}>
         <QueryClientProvider client={queryClient}>
-          {children}
+          <NextNavigationProvider>{children}</NextNavigationProvider>
           <Toaster />
         </QueryClientProvider>
       </ServicesContext.Provider>
