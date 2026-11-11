@@ -4,7 +4,7 @@
 **Status:** Draft v0.1
 **Related documents:** [README](../README.md) · [Technical Architecture Document](technical-architecture.md) · [Database Design Document](database-design.md)
 
-This roadmap breaks the build into a completed foundation stage and six weekly stages. Tick a box when the item is merged and meets the stage's exit criteria. The week boundaries are planning targets, not commitments.
+This roadmap breaks the build into a completed foundation stage, a completed CI stage, and six weekly stages. Tick a box when the item is merged and meets the stage's exit criteria. The week boundaries are planning targets, not commitments.
 
 ---
 
@@ -14,6 +14,7 @@ This roadmap breaks the build into a completed foundation stage and six weekly s
 timeline
     title Development Roadmap
     Stage 0 - Foundation : Repository and monorepo scaffold : Architecture and database design docs
+    Stage 0.5 - CI : GitHub Actions pipeline : CodeQL and Dependabot
     Stage 1 - Week 1 : Data architecture and authentication
     Stage 2 - Week 2 : Kanban and data table engines
     Stage 3 - Week 3 : Real-time layer and presence
@@ -26,7 +27,8 @@ timeline
 
 ```mermaid
 flowchart LR
-    S0[Stage 0<br/>Foundation] --> S1[Stage 1<br/>Data and Auth]
+    S0[Stage 0<br/>Foundation] --> S05[Stage 0.5<br/>CI]
+    S05 --> S1[Stage 1<br/>Data and Auth]
     S1 --> S2[Stage 2<br/>Kanban and Table]
     S1 --> S3[Stage 3<br/>Real-Time]
     S2 --> S3
@@ -63,6 +65,39 @@ These apply to all items below and are part of each stage's definition of done:
 - [x] Write the Technical Architecture Document
 - [x] Write the Database Design Document
 - [x] Add the Prisma schema file
+
+---
+
+## Stage 0.5: CI & Repository Automation (complete)
+
+**Goal:** Every push and pull request is verified automatically, and dependencies and code security are monitored, before feature work accelerates. Deployment lanes are deliberately deferred to Stage 6, when there is something to deploy.
+
+### Continuous integration
+
+- [x] GitHub Actions workflow `ci.yml`, run on pushes to `main` and on pull requests, with concurrency cancellation and read-only token permissions
+- [x] `verify` job: format check, lint, type-check, unit tests with the coverage gates for `shared-types`, `api-server` and `web`, `database` tests, and the full Turborepo build
+- [x] `integration` job: API integration suite against a PostgreSQL 15 service container, with committed migrations applied through `prisma migrate deploy`
+- [x] Build `database` and `shared-types` before tests, because workspace packages resolve through their `dist/` output
+- [x] pnpm store and Turborepo caches to keep runs fast
+
+### Security and dependency hygiene
+
+- [x] CodeQL static analysis on pushes, pull requests and a weekly schedule
+- [x] Dependabot weekly updates, with minor and patch bumps grouped, GitHub Actions bumps grouped, and major bumps for `prisma` and `@next/eslint-plugin-next` ignored until they are scheduled deliberately
+- [x] Bring actions and dependencies to current versions
+
+### Deferred
+
+- [ ] Branch protection on `main` requiring `verify` and `integration` (needs a pull-request workflow, which the solo commit-to-`main` flow does not use)
+- [ ] Playwright E2E job (Stage 2 onward, once there are pages worth testing)
+- [ ] GitHub Environments for deployment lanes (see Stage 6, Deployment)
+- [ ] Pre-commit hooks (husky and lint-staged)
+
+### Exit criteria
+
+- [x] CI is green on `main`, including the integration suite against a real database
+- [x] CodeQL runs without findings blocking merges
+- [x] Dependabot configuration is live and its initial backlog is cleared
 
 ---
 
@@ -366,8 +401,9 @@ These apply to all items below and are part of each stage's definition of done:
 
 - [ ] Dockerfiles for `web`, `api-server`, and `worker`
 - [ ] Choose the hosting platform and record the decision
-- [ ] CI pipeline: install, lint, type-check, test, build, scan, publish
-- [ ] CD to staging with smoke tests, then promotion to production
+- [x] CI pipeline: install, lint, type-check, test, build (done in Stage 0.5)
+- [ ] Extend CI to scan and publish container images
+- [ ] CD through GitHub Environments (dev, uat, preprod, production) with smoke tests and approval gates, promoting the same built image through each lane
 - [ ] Backward-compatible migration process for rolling deploys
 - [ ] Automated database backups with point-in-time recovery
 - [ ] Rehearse a backup restore
