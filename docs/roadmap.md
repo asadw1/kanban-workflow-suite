@@ -145,6 +145,13 @@ These apply to all items below and are part of each stage's definition of done:
 - [x] Implement workspace create, list, and switch endpoints
 - [x] Implement member invite and role-change endpoints
 - [x] Write audit entries for role changes within the same transaction
+- [ ] Add Redis-backed rate limiting (closes the nine CodeQL "Missing rate limiting" findings and the gap noted in ADR-011):
+  - [ ] Connect Redis through an injected client, and add it to the readiness check
+  - [ ] Register `@fastify/rate-limit` with a Redis store, so limits hold across instances and nothing lives in process memory
+  - [ ] Apply strict per-IP limits to `/auth/login`, `/auth/register` and `/auth/refresh`, and a general per-user limit to the authenticated routes
+  - [ ] Return `429` in the standard `{ message, code, details? }` shape, with a `Retry-After` header
+  - [ ] Cover limits, the 429 response, the Redis-unavailable behaviour (a deliberate fail-open or fail-closed choice recorded in the ADR) and per-route overrides with tests, and add an integration test against real Redis
+  - [ ] Update ADR-011, then confirm the CodeQL alerts close on the next scan
 
 ### Web application
 
