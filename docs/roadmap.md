@@ -149,11 +149,22 @@ These apply to all items below and are part of each stage's definition of done:
 ### Web application
 
 - [x] Initialize Next.js (App Router) with Tailwind and shadcn/ui
-- [ ] Set up the TanStack Query provider and client
-- [ ] Build `(auth)` routes: login, register, invite
+- [x] Set up the TanStack Query provider and client
+- [x] Data layer: typed `ApiError`, fetch `HttpClient` with refresh-and-retry, in-memory `SessionManager` with cross-tab refresh coordination, abstract `DataService`, central `queryKeys`, and the service context
+- [x] Design tokens: light azure brand palette (light and dark) in `globals.css`, with a system-following theme provider; inline styles are banned by lint
+- [x] shadcn primitives: button, input, label, dialog, sheet, select, command, dropdown-menu, avatar, badge, skeleton, sonner
+- [x] Shared components: `FormField`, `ConfirmDialog`, `FormDialog`, `EmptyState`, `ErrorState`, `UserAvatar`, `RoleBadge`
+- [x] Notifications: `Notifier` service, `useNotifier` hook and the global toaster
+- [x] Routing foundation: route registry, `useNavigation` adapter and the open-redirect guard
+- [x] Accessibility enforcement: `jsx-a11y` lint and axe-core checks in component tests
+- [ ] Reserve route-conflicting workspace slugs (`login`, `register`, `workspaces`, and so on) in the shared slug schema, or move workspace pages under a prefix
+- [ ] Concrete services extending `DataService`: `AuthApi`, `WorkspaceApi`, `MemberApi`, with their hooks
+- [ ] Build `(auth)` routes: login, register (the invite route waits for pending invites and the email queue in Stage 5)
+- [ ] `AuthGate` that redirects unauthenticated users to `/login?next=`
 - [ ] Build the protected `(dashboard)/[workspaceSlug]` layout shell
-- [ ] Build the workspace switcher
-- [ ] Build the command palette shell (`Cmd+K`) with navigation commands
+- [ ] Build the workspace switcher and the `/workspaces/new` page
+- [ ] Build the command palette shell (`Cmd+K`) with a permission-filtered `commandRegistry` and navigation commands
+- [ ] Build the members settings page with the invite dialog and role change
 
 ### Exit criteria
 
@@ -170,7 +181,7 @@ These apply to all items below and are part of each stage's definition of done:
 
 ### Ordering
 
-- [ ] Implement the Lexorank utilities in `apps/web/lib` (midpoint, before, after, first, last)
+- [ ] Implement the Lexorank utilities in `apps/web/shared/utils` (midpoint, before, after, first, last)
 - [ ] Implement the matching server-side validation and collision handling
 - [ ] Implement rebalancing for a parent's children when no midpoint exists or keys grow too long
 - [ ] Unit-test boundaries: empty list, single item, adjacent keys, repeated insertion in one gap
