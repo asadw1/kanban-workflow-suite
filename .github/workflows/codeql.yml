@@ -19,7 +19,7 @@ jobs:
       # Required to upload results to the repository's code scanning tab.
       security-events: write
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - uses: github/codeql-action/init@v3
         with:
