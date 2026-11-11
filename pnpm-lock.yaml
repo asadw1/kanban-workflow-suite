@@ -12,8 +12,8 @@ importers:
         specifier: ^9.12.0
         version: 9.39.5
       '@next/eslint-plugin-next':
-        specifier: ^15.0.0
-        version: 15.5.28
+        specifier: ^15.5.29
+        version: 15.5.29
       eslint:
         specifier: ^9.12.0
         version: 9.39.5
@@ -1098,8 +1098,8 @@ packages:
     resolution: {integrity: sha512-xxW5EBI8fMPuVTPBW7LL980IRbuDXlbkUAwp9DDhtb4Lnich3nJ13uYpvrX4VE74hWPf6AvHHAMmGCidcHjbfg==}
     dev: false
 
-  /@next/eslint-plugin-next@15.5.28:
-    resolution: {integrity: sha512-EsR/G+skBFfu8Z35P6V/yuu4IV8zkZXIssGOgIRD0ZXqB4CTEuEHQC1ySOQi31u4xjmgHVAdG1RT3QAasRmcZA==}
+  /@next/eslint-plugin-next@15.5.29:
+    resolution: {integrity: sha512-d3dH0WVbXr+W/3f/TMU6fl7vHJBuok7ugMCDPfRnHhCLl8ppAtFbfXgVHpnLrUirHN4vE5GkTMnId3Fmxv9UCQ==}
     dependencies:
       fast-glob: 3.3.1
     dev: true
@@ -3275,7 +3275,7 @@ packages:
       std-env: 3.10.0
       test-exclude: 7.0.2
       tinyrainbow: 2.0.0
-      vitest: 3.2.7(@types/node@20.19.43)(jsdom@25.0.1)
+      vitest: 3.2.7(@types/node@20.19.43)(tsx@4.23.15)
     transitivePeerDependencies:
       - supports-color
     dev: true
