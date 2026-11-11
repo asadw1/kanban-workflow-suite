@@ -1,10 +1,10 @@
-# Dependabot: weekly dependency update PRs, grouped to keep noise down.
+# Dependabot: monthly dependency update PRs, grouped to keep noise down.
 version: 2
 updates:
   - package-ecosystem: npm
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
     open-pull-requests-limit: 5
     groups:
       # One PR for all minor/patch bumps.
@@ -22,7 +22,7 @@ updates:
   - package-ecosystem: github-actions
     directory: /
     schedule:
-      interval: weekly
+      interval: monthly
     groups:
       # All action bumps in a single PR instead of one per action.
       actions:

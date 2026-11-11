@@ -84,7 +84,7 @@ These apply to all items below and are part of each stage's definition of done:
 ### Security and dependency hygiene
 
 - [x] CodeQL static analysis on pushes, pull requests and a weekly schedule
-- [x] Dependabot weekly updates, with minor and patch bumps grouped, GitHub Actions bumps grouped, and major bumps for `prisma` and `@next/eslint-plugin-next` ignored until they are scheduled deliberately
+- [x] Dependabot monthly updates, with minor and patch bumps grouped, GitHub Actions bumps grouped, and all npm major bumps ignored so major upgrades (prisma 7, Next 16, vitest 5, typescript 6 and so on) are scheduled deliberately
 - [x] Bring actions and dependencies to current versions
 
 ### Deferred
