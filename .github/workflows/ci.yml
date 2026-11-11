@@ -52,8 +52,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      # The Prisma client must exist before typecheck, tests and build.
-      - run: pnpm --filter database db:generate
+      # Workspace packages resolve through their built dist/ (and the Prisma client must exist),
+      # so build them before anything imports them. `database` build also runs prisma generate.
+      - run: pnpm --filter database --filter shared-types build
 
       - run: pnpm format:check
       - run: pnpm lint
@@ -98,7 +99,10 @@ jobs:
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
-      - run: pnpm --filter database db:generate
+
+      # Workspace packages resolve through their built dist/, so build them before the tests
+      # import them. `database` build also runs prisma generate.
+      - run: pnpm --filter database --filter shared-types build
 
       # Apply committed migrations (not `db push`) so CI proves the migration history is valid.
       - run: pnpm --filter database exec prisma migrate deploy
