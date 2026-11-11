@@ -121,6 +121,7 @@ Each screen has one thin **container** in its feature folder. It calls hooks, ha
 | `SafeRichText`      | Sanitized rendering of stored rich text                                                      |
 | `FileDropzone`      | Upload with type and size validation, progress, and error states                             |
 | `ConfirmDialog`     | The single confirmation pattern for destructive actions                                      |
+| `FormDialog`        | Modal containing a form: layout, Enter-to-submit, cancel, and a pending lock                 |
 | `FormField`         | React Hook Form and Zod wrapper providing label, hint, and error display                     |
 | `DynamicFieldInput` | Renders the right input for a `CustomFieldType` (see [section 5.1](#51-field-type-registry)) |
 
@@ -250,6 +251,7 @@ sequenceDiagram
 | `socketClient`      | Typed Socket.io client built on the `shared-types` payload definitions                                    |
 | `permissions`       | Role-to-capability map used by `PermissionGate` and `usePermissions`                                      |
 | `format`            | Dates, numbers, file sizes, and pluralization                                                             |
+| `notifier`          | `Notifier` interface (`success`, `info`, `error`) over Sonner toasts, used through `useNotifier`          |
 | `fieldTypeRegistry` | See [section 5.1](#51-field-type-registry)                                                                |
 | `commandRegistry`   | See [section 5.2](#52-command-registry)                                                                   |
 
@@ -274,6 +276,8 @@ sequenceDiagram
 - Never copy server data into Zustand.
 
 ### 8.3 Accessibility
+
+The binding rule is [principle 8](#1-principles) (ADA and WCAG 2.2 AA, enforced by lint and axe tests). In short:
 
 - Interactive components expose correct roles, labels, and keyboard behavior as part of their contract, not as later polish.
 - Focus is managed on open and close for dialogs, sheets, and the command palette.
