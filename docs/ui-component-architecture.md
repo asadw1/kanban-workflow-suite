@@ -89,63 +89,63 @@ Each screen has one thin **container** in its feature folder. It calls hooks, ha
 
 ### 4.2 Identity and display (`shared/components/`)
 
-| Component | Purpose | Reused by |
-| --- | --- | --- |
-| `UserAvatar` | One avatar with initials fallback | Cards, comments, presence, members |
-| `AvatarStack` | Overlapping avatars with a "+N" overflow | Presence bar, card assignees |
-| `UserPicker` | Searchable workspace-member selector | Assignee, `USER` custom field, invites |
-| `PriorityBadge` | Single source of priority colors and labels | Card, table, filters |
-| `TagChip` | Tag rendering | Card, table, filters |
-| `RoleBadge` | Display for `OWNER`, `ADMIN`, `MEMBER`, `VIEWER` | Members list, invites |
-| `RelativeTime` | Relative time with full timestamp on hover | Comments, activity feed |
-| `EmptyState` | Icon, message, optional action | Any list or board |
-| `ErrorState` | Retryable error that understands `{ message, code }` | Any data-loading view |
+| Component       | Purpose                                              | Reused by                              |
+| --------------- | ---------------------------------------------------- | -------------------------------------- |
+| `UserAvatar`    | One avatar with initials fallback                    | Cards, comments, presence, members     |
+| `AvatarStack`   | Overlapping avatars with a "+N" overflow             | Presence bar, card assignees           |
+| `UserPicker`    | Searchable workspace-member selector                 | Assignee, `USER` custom field, invites |
+| `PriorityBadge` | Single source of priority colors and labels          | Card, table, filters                   |
+| `TagChip`       | Tag rendering                                        | Card, table, filters                   |
+| `RoleBadge`     | Display for `OWNER`, `ADMIN`, `MEMBER`, `VIEWER`     | Members list, invites                  |
+| `RelativeTime`  | Relative time with full timestamp on hover           | Comments, activity feed                |
+| `EmptyState`    | Icon, message, optional action                       | Any list or board                      |
+| `ErrorState`    | Retryable error that understands `{ message, code }` | Any data-loading view                  |
 
 ### 4.3 Inputs and editing (`shared/components/`)
 
-| Component | Purpose |
-| --- | --- |
-| `DatePicker` | Date selection for due dates and `DATE` fields |
-| `PriorityPicker` | Selection of `LOW` through `URGENT` |
-| `TagMultiSelect` | Apply and remove tags |
-| `InlineEditable` | Click-to-edit with save and cancel, shared by card titles and table cells |
-| `RichTextEditor` | Description and comment editing |
-| `SafeRichText` | Sanitized rendering of stored rich text |
-| `FileDropzone` | Upload with type and size validation, progress, and error states |
-| `ConfirmDialog` | The single confirmation pattern for destructive actions |
-| `FormField` | React Hook Form and Zod wrapper providing label, hint, and error display |
+| Component           | Purpose                                                                                      |
+| ------------------- | -------------------------------------------------------------------------------------------- |
+| `DatePicker`        | Date selection for due dates and `DATE` fields                                               |
+| `PriorityPicker`    | Selection of `LOW` through `URGENT`                                                          |
+| `TagMultiSelect`    | Apply and remove tags                                                                        |
+| `InlineEditable`    | Click-to-edit with save and cancel, shared by card titles and table cells                    |
+| `RichTextEditor`    | Description and comment editing                                                              |
+| `SafeRichText`      | Sanitized rendering of stored rich text                                                      |
+| `FileDropzone`      | Upload with type and size validation, progress, and error states                             |
+| `ConfirmDialog`     | The single confirmation pattern for destructive actions                                      |
+| `FormField`         | React Hook Form and Zod wrapper providing label, hint, and error display                     |
 | `DynamicFieldInput` | Renders the right input for a `CustomFieldType` (see [section 5.1](#51-field-type-registry)) |
 
 ### 4.4 Layout and navigation (`shared/components/layout/`)
 
-| Component | Purpose |
-| --- | --- |
-| `AppShell` | Page frame, sidebar, and header slots |
-| `Sidebar`, `PageHeader`, `Breadcrumbs` | Navigation and page chrome |
-| `WorkspaceSwitcher` | Switch the active workspace |
-| `CommandPalette` | `Cmd+K` palette driven by a command registry (see [section 5.2](#52-command-registry)) |
-| `PermissionGate` | Renders children only if the role allows the capability |
+| Component                              | Purpose                                                                                |
+| -------------------------------------- | -------------------------------------------------------------------------------------- |
+| `AppShell`                             | Page frame, sidebar, and header slots                                                  |
+| `Sidebar`, `PageHeader`, `Breadcrumbs` | Navigation and page chrome                                                             |
+| `WorkspaceSwitcher`                    | Switch the active workspace                                                            |
+| `CommandPalette`                       | `Cmd+K` palette driven by a command registry (see [section 5.2](#52-command-registry)) |
+| `PermissionGate`                       | Renders children only if the role allows the capability                                |
 
 ### 4.5 Data display (`shared/components/data/`)
 
-| Component | Purpose |
-| --- | --- |
-| `DataTable` | Generic TanStack Table wrapper with sorting, filtering, column visibility, pagination, and CSV export |
-| `FilterBar`, `FacetFilter` | Reusable filtering controls |
-| `VirtualList` | Virtualization for long lists and large boards |
-| `ActivityFeed` | Renders `ActivityLog` entries for a card or workspace |
-| `ProgressBar` | Checklist and completion progress |
+| Component                  | Purpose                                                                                               |
+| -------------------------- | ----------------------------------------------------------------------------------------------------- |
+| `DataTable`                | Generic TanStack Table wrapper with sorting, filtering, column visibility, pagination, and CSV export |
+| `FilterBar`, `FacetFilter` | Reusable filtering controls                                                                           |
+| `VirtualList`              | Virtualization for long lists and large boards                                                        |
+| `ActivityFeed`             | Renders `ActivityLog` entries for a card or workspace                                                 |
+| `ProgressBar`              | Checklist and completion progress                                                                     |
 
 `DataTable` is generic over its row type and column definitions. The board table view, members list, automation rule list, and audit log all use it.
 
 ### 4.6 Real-time (`shared/components/real-time/`)
 
-| Component | Purpose |
-| --- | --- |
-| `PresenceAvatars` | Who is on this board now |
-| `CursorLayer` | Live cursors, throttled and ephemeral |
+| Component            | Purpose                                    |
+| -------------------- | ------------------------------------------ |
+| `PresenceAvatars`    | Who is on this board now                   |
+| `CursorLayer`        | Live cursors, throttled and ephemeral      |
 | `FieldLockIndicator` | Wraps a field and shows who holds its lock |
-| `ConnectionStatus` | Connected, reconnecting, or offline |
+| `ConnectionStatus`   | Connected, reconnecting, or offline        |
 
 ---
 
@@ -196,14 +196,14 @@ Each trigger and action node type registers its component, default configuration
 
 ## 6. Shared Hooks (`shared/hooks/`)
 
-| Hook | Purpose |
-| --- | --- |
-| `useOptimisticMutation` | Wraps a mutation with snapshot, `setQueryData`, rollback on error, and invalidation on settle |
-| `useSocket`, `useRoom` | Connection and room lifecycle with cleanup |
-| `usePermissions` | Capability checks for the current user and workspace |
-| `useCurrentWorkspace` | The active workspace and the user's role in it |
-| `useDebouncedValue`, `useThrottledCallback` | Search input and cursor updates |
-| `useKeyboardShortcut` | Registered, conflict-aware shortcuts |
+| Hook                                        | Purpose                                                                                       |
+| ------------------------------------------- | --------------------------------------------------------------------------------------------- |
+| `useOptimisticMutation`                     | Wraps a mutation with snapshot, `setQueryData`, rollback on error, and invalidation on settle |
+| `useSocket`, `useRoom`                      | Connection and room lifecycle with cleanup                                                    |
+| `usePermissions`                            | Capability checks for the current user and workspace                                          |
+| `useCurrentWorkspace`                       | The active workspace and the user's role in it                                                |
+| `useDebouncedValue`, `useThrottledCallback` | Search input and cursor updates                                                               |
+| `useKeyboardShortcut`                       | Registered, conflict-aware shortcuts                                                          |
 
 ### Optimistic mutation flow
 
@@ -234,16 +234,16 @@ sequenceDiagram
 
 ## 7. Services and Utilities (`shared/services/`, `shared/utils/`)
 
-| Module | Responsibility |
-| --- | --- |
-| `apiClient` | Typed fetch wrapper that attaches auth, parses the standard error shape, and validates responses with Zod |
-| `queryKeys` | Central factory for TanStack Query keys. Keys are never written inline |
-| `lexorank` | Midpoint, before, after, first, last, and compare for fractional positions |
-| `socketClient` | Typed Socket.io client built on the `shared-types` payload definitions |
-| `permissions` | Role-to-capability map used by `PermissionGate` and `usePermissions` |
-| `format` | Dates, numbers, file sizes, and pluralization |
-| `fieldTypeRegistry` | See [section 5.1](#51-field-type-registry) |
-| `commandRegistry` | See [section 5.2](#52-command-registry) |
+| Module              | Responsibility                                                                                            |
+| ------------------- | --------------------------------------------------------------------------------------------------------- |
+| `apiClient`         | Typed fetch wrapper that attaches auth, parses the standard error shape, and validates responses with Zod |
+| `queryKeys`         | Central factory for TanStack Query keys. Keys are never written inline                                    |
+| `lexorank`          | Midpoint, before, after, first, last, and compare for fractional positions                                |
+| `socketClient`      | Typed Socket.io client built on the `shared-types` payload definitions                                    |
+| `permissions`       | Role-to-capability map used by `PermissionGate` and `usePermissions`                                      |
+| `format`            | Dates, numbers, file sizes, and pluralization                                                             |
+| `fieldTypeRegistry` | See [section 5.1](#51-field-type-registry)                                                                |
+| `commandRegistry`   | See [section 5.2](#52-command-registry)                                                                   |
 
 `permissions` should be derived from the same capability definitions as the server's RBAC matrix, ideally exported from `packages/shared-types`, so the two cannot drift.
 

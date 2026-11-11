@@ -51,10 +51,10 @@ erDiagram
 
 ## 3. Enumerations
 
-| Enum | Values | Purpose |
-| --- | --- | --- |
-| `Role` | `OWNER`, `ADMIN`, `MEMBER`, `VIEWER` | Workspace permission tier |
-| `Priority` | `LOW`, `MEDIUM`, `HIGH`, `URGENT` | Card priority (default `MEDIUM`) |
+| Enum              | Values                                                                 | Purpose                                           |
+| ----------------- | ---------------------------------------------------------------------- | ------------------------------------------------- |
+| `Role`            | `OWNER`, `ADMIN`, `MEMBER`, `VIEWER`                                   | Workspace permission tier                         |
+| `Priority`        | `LOW`, `MEDIUM`, `HIGH`, `URGENT`                                      | Card priority (default `MEDIUM`)                  |
 | `CustomFieldType` | `TEXT`, `NUMBER`, `SELECT`, `MULTI_SELECT`, `DATE`, `CHECKBOX`, `USER` | Defines how a custom field's value is interpreted |
 
 ---
@@ -63,58 +63,58 @@ erDiagram
 
 ### 4.1 Identity and tenancy
 
-| Entity | Purpose | Key fields and constraints |
-| --- | --- | --- |
-| `User` | A person with an account | `email` unique |
-| `Workspace` | The tenant | `slug` unique |
+| Entity            | Purpose                                 | Key fields and constraints                                     |
+| ----------------- | --------------------------------------- | -------------------------------------------------------------- |
+| `User`            | A person with an account                | `email` unique                                                 |
+| `Workspace`       | The tenant                              | `slug` unique                                                  |
 | `WorkspaceMember` | Joins a user to a workspace with a role | `@@unique([userId, workspaceId])`; `role` defaults to `MEMBER` |
 
 ### 4.2 Board hierarchy
 
-| Entity | Purpose | Key fields and constraints |
-| --- | --- | --- |
-| `Board` | A Kanban board in a workspace | `position` (Lexorank); belongs to a workspace |
-| `Column` | A lane on a board | `position` (Lexorank); belongs to a board |
-| `Card` | A unit of work | `position` (Lexorank); `priority`; optional `dueDate`, `description`, `assigneeId`; required `creatorId` |
+| Entity   | Purpose                       | Key fields and constraints                                                                               |
+| -------- | ----------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `Board`  | A Kanban board in a workspace | `position` (Lexorank); belongs to a workspace                                                            |
+| `Column` | A lane on a board             | `position` (Lexorank); belongs to a board                                                                |
+| `Card`   | A unit of work                | `position` (Lexorank); `priority`; optional `dueDate`, `description`, `assigneeId`; required `creatorId` |
 
 ### 4.3 Card detail
 
-| Entity | Purpose | Key fields and constraints |
-| --- | --- | --- |
-| `Comment` | A comment on a card | `content`; author and card required |
-| `Attachment` | A file attached to a card | `fileName`, `fileUrl`, `mimeType`, `sizeBytes`; stores metadata and a reference only, not file bytes |
-| `Checklist` | A titled checklist on a card | Contains `ChecklistItem` rows |
-| `ChecklistItem` | One checklist entry | `content`, `isCompleted` (default `false`) |
-| `Tag` | A workspace-scoped label | `@@unique([workspaceId, name])`; `color` |
-| `TagOnCard` | Joins tags to cards | Composite primary key `[cardId, tagId]` |
+| Entity          | Purpose                      | Key fields and constraints                                                                           |
+| --------------- | ---------------------------- | ---------------------------------------------------------------------------------------------------- |
+| `Comment`       | A comment on a card          | `content`; author and card required                                                                  |
+| `Attachment`    | A file attached to a card    | `fileName`, `fileUrl`, `mimeType`, `sizeBytes`; stores metadata and a reference only, not file bytes |
+| `Checklist`     | A titled checklist on a card | Contains `ChecklistItem` rows                                                                        |
+| `ChecklistItem` | One checklist entry          | `content`, `isCompleted` (default `false`)                                                           |
+| `Tag`           | A workspace-scoped label     | `@@unique([workspaceId, name])`; `color`                                                             |
+| `TagOnCard`     | Joins tags to cards          | Composite primary key `[cardId, tagId]`                                                              |
 
 ### 4.4 Custom fields
 
-| Entity | Purpose | Key fields and constraints |
-| --- | --- | --- |
-| `CustomField` | A field definition scoped to a workspace | `fieldType` (enum); `options` string array for `SELECT` and `MULTI_SELECT` |
-| `CustomFieldValue` | A card's value for one field | `@@unique([cardId, customFieldId])`; `value` is `Json` |
+| Entity             | Purpose                                  | Key fields and constraints                                                 |
+| ------------------ | ---------------------------------------- | -------------------------------------------------------------------------- |
+| `CustomField`      | A field definition scoped to a workspace | `fieldType` (enum); `options` string array for `SELECT` and `MULTI_SELECT` |
+| `CustomFieldValue` | A card's value for one field             | `@@unique([cardId, customFieldId])`; `value` is `Json`                     |
 
 `value` shape by `fieldType`:
 
-| `fieldType` | JSON shape of `value` |
-| --- | --- |
-| `TEXT` | string |
-| `NUMBER` | number |
-| `SELECT` | string, one of `options` |
+| `fieldType`    | JSON shape of `value`                 |
+| -------------- | ------------------------------------- |
+| `TEXT`         | string                                |
+| `NUMBER`       | number                                |
+| `SELECT`       | string, one of `options`              |
 | `MULTI_SELECT` | array of strings, each from `options` |
-| `DATE` | ISO 8601 string |
-| `CHECKBOX` | boolean |
-| `USER` | user ID string |
+| `DATE`         | ISO 8601 string                       |
+| `CHECKBOX`     | boolean                               |
+| `USER`         | user ID string                        |
 
 The database does not enforce these shapes. The service layer validates each value against the field's type with Zod before writing.
 
 ### 4.5 Automation and audit
 
-| Entity | Purpose | Key fields and constraints |
-| --- | --- | --- |
-| `AutomationRule` | A trigger and action definition | `triggerType`, `triggerConfig` (Json), `actionType`, `actionConfig` (Json), `isActive` default `true` |
-| `ActivityLog` | Append-only audit record | `action`, `entityType`, `entityId`, optional `details` (Json); nullable `actorId`; `@@index([workspaceId, createdAt])` |
+| Entity           | Purpose                         | Key fields and constraints                                                                                             |
+| ---------------- | ------------------------------- | ---------------------------------------------------------------------------------------------------------------------- |
+| `AutomationRule` | A trigger and action definition | `triggerType`, `triggerConfig` (Json), `actionType`, `actionConfig` (Json), `isActive` default `true`                  |
+| `ActivityLog`    | Append-only audit record        | `action`, `entityType`, `entityId`, optional `details` (Json); nullable `actorId`; `@@index([workspaceId, createdAt])` |
 
 Known values for `triggerType` include `CARD_MOVED`, `CARD_CREATED`, and `DUE_DATE_APPROACHING`. Known values for `actionType` include `REASSIGN`, `SEND_WEBHOOK`, and `CHANGE_PRIORITY`. These are plain strings in the schema; the set is enforced in application code and may later be promoted to enums.
 
@@ -122,18 +122,18 @@ Known values for `triggerType` include `CARD_MOVED`, `CARD_CREATED`, and `DUE_DA
 
 ## 5. Relationships and Delete Behavior
 
-| Parent | Child | On parent delete |
-| --- | --- | --- |
-| `Workspace` | Members, boards, custom fields, tags, rules, activity logs | Cascade |
-| `Board` | `Column` | Cascade |
-| `Column` | `Card` | Cascade |
-| `Card` | Comments, attachments, checklists, field values, tag links | Cascade |
-| `Checklist` | `ChecklistItem` | Cascade |
-| `Tag`, `CustomField` | Their link and value rows | Cascade |
-| `User` | `WorkspaceMember`, `Comment`, `Attachment` | Cascade |
-| `User` (as actor) | `ActivityLog.actorId` | Set to null |
-| `User` (as assignee) | `Card.assigneeId` | Prisma default for an optional relation: set null |
-| `User` (as creator) | `Card.creatorId` | Prisma default for a required relation: restrict |
+| Parent               | Child                                                      | On parent delete                                  |
+| -------------------- | ---------------------------------------------------------- | ------------------------------------------------- |
+| `Workspace`          | Members, boards, custom fields, tags, rules, activity logs | Cascade                                           |
+| `Board`              | `Column`                                                   | Cascade                                           |
+| `Column`             | `Card`                                                     | Cascade                                           |
+| `Card`               | Comments, attachments, checklists, field values, tag links | Cascade                                           |
+| `Checklist`          | `ChecklistItem`                                            | Cascade                                           |
+| `Tag`, `CustomField` | Their link and value rows                                  | Cascade                                           |
+| `User`               | `WorkspaceMember`, `Comment`, `Attachment`                 | Cascade                                           |
+| `User` (as actor)    | `ActivityLog.actorId`                                      | Set to null                                       |
+| `User` (as assignee) | `Card.assigneeId`                                          | Prisma default for an optional relation: set null |
+| `User` (as creator)  | `Card.creatorId`                                           | Prisma default for a required relation: restrict  |
 
 Design implications to be aware of:
 
@@ -171,19 +171,19 @@ The schema cannot express the following, so services must enforce them and tests
 
 PostgreSQL does not index foreign key columns automatically. The following (excluding those listed in 7.1) are not yet in the schema and should be added as the corresponding queries are implemented:
 
-| Index | Supports |
-| --- | --- |
-| `Board(workspaceId, position)` | Listing boards in order |
-| `Column(boardId, position)` | Rendering a board's lanes in order |
-| `Card(columnId, position)` | Rendering a column's cards in order (hottest query) |
-| `Card(assigneeId)` | "My cards" views and assignee filters |
-| `Card(dueDate)` | Due-date automation scans |
-| `Comment(cardId, createdAt)` | Comment threads |
-| `Attachment(cardId)` | Card detail loading |
-| `AutomationRule(workspaceId, triggerType, isActive)` | Rule lookup when an event fires |
-| `WorkspaceMember(workspaceId)` | Member lists (the existing unique index leads with `userId`) |
-| `TagOnCard(tagId)` | Filtering cards by tag |
-| `ActivityLog(workspaceId, entityType, entityId)` | Per-entity history |
+| Index                                                | Supports                                                     |
+| ---------------------------------------------------- | ------------------------------------------------------------ |
+| `Board(workspaceId, position)`                       | Listing boards in order                                      |
+| `Column(boardId, position)`                          | Rendering a board's lanes in order                           |
+| `Card(columnId, position)`                           | Rendering a column's cards in order (hottest query)          |
+| `Card(assigneeId)`                                   | "My cards" views and assignee filters                        |
+| `Card(dueDate)`                                      | Due-date automation scans                                    |
+| `Comment(cardId, createdAt)`                         | Comment threads                                              |
+| `Attachment(cardId)`                                 | Card detail loading                                          |
+| `AutomationRule(workspaceId, triggerType, isActive)` | Rule lookup when an event fires                              |
+| `WorkspaceMember(workspaceId)`                       | Member lists (the existing unique index leads with `userId`) |
+| `TagOnCard(tagId)`                                   | Filtering cards by tag                                       |
+| `ActivityLog(workspaceId, entityType, entityId)`     | Per-entity history                                           |
 
 Each addition should be justified against a real query plan before merging.
 
@@ -228,6 +228,6 @@ Each addition should be justified against a real query plan before merging.
 
 ## 12. Change Log
 
-| Version | Change |
-| --- | --- |
-| 0.1 | Initial document, derived from the README schema. Added `Attachment`, workspace-scoped `Tag`, `ActivityLog.actorId`, `CustomFieldType` enum, and `Json` field values. |
+| Version | Change                                                                                                                                                                |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 0.1     | Initial document, derived from the README schema. Added `Attachment`, workspace-scoped `Tag`, `ActivityLog.actorId`, `CustomFieldType` enum, and `Json` field values. |

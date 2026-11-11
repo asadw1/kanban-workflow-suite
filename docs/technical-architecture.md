@@ -44,13 +44,13 @@ Out of scope: billing, SSO/SAML federation, native mobile clients, and email del
 
 ### 1.3 Definitions
 
-| Term | Meaning |
-| --- | --- |
-| Workspace | The tenant boundary. All boards, fields, tags, rules, and logs belong to exactly one workspace. |
-| Board / Column / Card | The Kanban hierarchy. Each level is ordered by a Lexorank `position`. |
-| Lexorank | Fractional string ordering that lets one item move by changing only its own `position`. |
-| Room | A Socket.io room. Events are delivered only to sockets joined to the target room. |
-| Automation rule | A trigger and action pair evaluated asynchronously by a BullMQ worker. |
+| Term                  | Meaning                                                                                         |
+| --------------------- | ----------------------------------------------------------------------------------------------- |
+| Workspace             | The tenant boundary. All boards, fields, tags, rules, and logs belong to exactly one workspace. |
+| Board / Column / Card | The Kanban hierarchy. Each level is ordered by a Lexorank `position`.                           |
+| Lexorank              | Fractional string ordering that lets one item move by changing only its own `position`.         |
+| Room                  | A Socket.io room. Events are delivered only to sockets joined to the target room.               |
+| Automation rule       | A trigger and action pair evaluated asynchronously by a BullMQ worker.                          |
 
 ---
 
@@ -65,16 +65,16 @@ Out of scope: billing, SSO/SAML federation, native mobile clients, and email del
 
 ### 2.2 Quality attributes
 
-| Attribute | Requirement | Primary tactics |
-| --- | --- | --- |
-| Responsiveness | Drag-and-drop feels instant; remote clients see a move within about 200 ms at p95 **(target)** | Optimistic updates, single-row writes via Lexorank, WebSocket push |
-| Consistency | Concurrent edits converge; no silent lost updates | Server-authoritative ordering, version checks, field locks, reconciliation on reconnect |
-| Tenant isolation | No cross-tenant read or write | `workspaceId` scoping on every query, membership checks, room scoping |
-| Scalability | Horizontal scaling of API and gateway without sticky-session coupling | Stateless services, Redis adapter, externalized state |
-| Availability | 99.9% monthly for API and gateway **(target)** | Redundant instances, health checks, graceful degradation |
-| Auditability | Every mutation attributable and tamper-resistant | Append-only `ActivityLog`, written in the same transaction as the mutation |
-| Maintainability | Shared contracts between client and server | Monorepo, `shared-types` package, Zod schemas |
-| Security | Least privilege, defense in depth | See [section 9](#9-security-architecture) |
+| Attribute        | Requirement                                                                                    | Primary tactics                                                                         |
+| ---------------- | ---------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| Responsiveness   | Drag-and-drop feels instant; remote clients see a move within about 200 ms at p95 **(target)** | Optimistic updates, single-row writes via Lexorank, WebSocket push                      |
+| Consistency      | Concurrent edits converge; no silent lost updates                                              | Server-authoritative ordering, version checks, field locks, reconciliation on reconnect |
+| Tenant isolation | No cross-tenant read or write                                                                  | `workspaceId` scoping on every query, membership checks, room scoping                   |
+| Scalability      | Horizontal scaling of API and gateway without sticky-session coupling                          | Stateless services, Redis adapter, externalized state                                   |
+| Availability     | 99.9% monthly for API and gateway **(target)**                                                 | Redundant instances, health checks, graceful degradation                                |
+| Auditability     | Every mutation attributable and tamper-resistant                                               | Append-only `ActivityLog`, written in the same transaction as the mutation              |
+| Maintainability  | Shared contracts between client and server                                                     | Monorepo, `shared-types` package, Zod schemas                                           |
+| Security         | Least privilege, defense in depth                                                              | See [section 9](#9-security-architecture)                                               |
 
 ### 2.3 Constraints
 
@@ -143,17 +143,17 @@ flowchart TB
 
 ### 4.2 Technology summary
 
-| Layer | Choice | Notes |
-| --- | --- | --- |
-| Frontend | Next.js App Router, React 19, Tailwind, shadcn/ui | Server Components for initial data; Client Components for interactivity |
-| Client state | TanStack Query v5, Zustand | Query for server state; Zustand for UI-only state |
-| Drag and drop | `@dnd-kit` | Optimistic updates with rollback |
-| Data grid / canvas | TanStack Table v8, React Flow | |
-| API | Node.js 20+, Fastify 5 (ADR-009) | Controllers, services, middleware |
-| Real-time | Socket.io with `@socket.io/redis-adapter` | |
-| Jobs | BullMQ on Redis | |
-| Persistence | PostgreSQL 15+ via Prisma | |
-| Build | Turborepo, pnpm | |
+| Layer              | Choice                                            | Notes                                                                   |
+| ------------------ | ------------------------------------------------- | ----------------------------------------------------------------------- |
+| Frontend           | Next.js App Router, React 19, Tailwind, shadcn/ui | Server Components for initial data; Client Components for interactivity |
+| Client state       | TanStack Query v5, Zustand                        | Query for server state; Zustand for UI-only state                       |
+| Drag and drop      | `@dnd-kit`                                        | Optimistic updates with rollback                                        |
+| Data grid / canvas | TanStack Table v8, React Flow                     |                                                                         |
+| API                | Node.js 20+, Fastify 5 (ADR-009)                  | Controllers, services, middleware                                       |
+| Real-time          | Socket.io with `@socket.io/redis-adapter`         |                                                                         |
+| Jobs               | BullMQ on Redis                                   |                                                                         |
+| Persistence        | PostgreSQL 15+ via Prisma                         |                                                                         |
+| Build              | Turborepo, pnpm                                   |                                                                         |
 
 ### 4.3 Repository layout
 
@@ -173,13 +173,13 @@ The layout is defined in the [README](../README.md#repository-directory-structur
 
 ### 5.2 API service (`apps/api-server`)
 
-| Layer | Responsibility |
-| --- | --- |
+| Layer          | Responsibility                                                                            |
+| -------------- | ----------------------------------------------------------------------------------------- |
 | `middlewares/` | Authentication, workspace resolution, RBAC enforcement, request validation, error mapping |
-| `controllers/` | HTTP routing and transport concerns only |
-| `services/` | Business logic, transactions, automation evaluation, enqueueing jobs |
-| `websockets/` | Socket.io gateway and room management |
-| `queues/` | BullMQ producers and processors |
+| `controllers/` | HTTP routing and transport concerns only                                                  |
+| `services/`    | Business logic, transactions, automation evaluation, enqueueing jobs                      |
+| `websockets/`  | Socket.io gateway and room management                                                     |
+| `queues/`      | BullMQ producers and processors                                                           |
 
 Controllers contain no business logic. Services are the only layer that touches Prisma, so a transaction boundary is always explicit.
 
@@ -278,10 +278,10 @@ Socket.io over WSS, with HTTP long-polling as a fallback. The Redis adapter prop
 
 ### 7.2 Rooms
 
-| Room | Contents | Used for |
-| --- | --- | --- |
+| Room             | Contents                                      | Used for                                |
+| ---------------- | --------------------------------------------- | --------------------------------------- |
 | `workspace:<id>` | Sockets of members currently in the workspace | Workspace-level presence, notifications |
-| `board:<id>` | Sockets viewing a board | Card events, cursors, locks |
+| `board:<id>`     | Sockets viewing a board                       | Card events, cursors, locks             |
 
 Rules: sockets join only rooms they are authorized for; events are never broadcast globally; a membership or role change evicts affected sockets from rooms.
 
@@ -348,14 +348,14 @@ sequenceDiagram
 
 Every REST endpoint and WebSocket handler resolves the caller's `WorkspaceMember` role before any write. The matrix below is the proposed baseline:
 
-| Capability | VIEWER | MEMBER | ADMIN | OWNER |
-| --- | :---: | :---: | :---: | :---: |
-| Read boards, cards, comments | Yes | Yes | Yes | Yes |
-| Create and edit cards, comment, upload attachments | No | Yes | Yes | Yes |
-| Manage boards, columns, tags | No | No | Yes | Yes |
-| Manage custom fields and automation rules | No | No | Yes | Yes |
-| Manage members and roles | No | No | Yes (not Owners) | Yes |
-| Delete workspace, transfer ownership | No | No | No | Yes |
+| Capability                                         | VIEWER | MEMBER |      ADMIN       | OWNER |
+| -------------------------------------------------- | :----: | :----: | :--------------: | :---: |
+| Read boards, cards, comments                       |  Yes   |  Yes   |       Yes        |  Yes  |
+| Create and edit cards, comment, upload attachments |   No   |  Yes   |       Yes        |  Yes  |
+| Manage boards, columns, tags                       |   No   |   No   |       Yes        |  Yes  |
+| Manage custom fields and automation rules          |   No   |   No   |       Yes        |  Yes  |
+| Manage members and roles                           |   No   |   No   | Yes (not Owners) |  Yes  |
+| Delete workspace, transfer ownership               |   No   |   No   |        No        |  Yes  |
 
 Authorization is enforced in the service layer so it applies equally to REST, WebSocket, and worker-initiated actions.
 
@@ -388,15 +388,15 @@ Authorization is enforced in the service layer so it applies equally to REST, We
 
 ## 10. Scalability and Performance
 
-| Concern | Approach |
-| --- | --- |
-| API scaling | Stateless instances behind a load balancer; no local session state |
-| Gateway scaling | Redis adapter; any instance serves any client; sticky sessions only needed for long-polling fallback |
-| Worker scaling | Add worker processes per queue; concurrency tuned per job type |
-| Database | Connection pooling (PgBouncer or Prisma pooling), indexes for hot paths, read replicas if read load demands |
-| Large boards | Paginated card queries, list virtualization, column-level lazy loading |
-| Reordering cost | O(1) writes via Lexorank; periodic rebalancing bounded to one column |
-| Cache | Redis for short-lived derived data; PostgreSQL remains authoritative |
+| Concern         | Approach                                                                                                    |
+| --------------- | ----------------------------------------------------------------------------------------------------------- |
+| API scaling     | Stateless instances behind a load balancer; no local session state                                          |
+| Gateway scaling | Redis adapter; any instance serves any client; sticky sessions only needed for long-polling fallback        |
+| Worker scaling  | Add worker processes per queue; concurrency tuned per job type                                              |
+| Database        | Connection pooling (PgBouncer or Prisma pooling), indexes for hot paths, read replicas if read load demands |
+| Large boards    | Paginated card queries, list virtualization, column-level lazy loading                                      |
+| Reordering cost | O(1) writes via Lexorank; periodic rebalancing bounded to one column                                        |
+| Cache           | Redis for short-lived derived data; PostgreSQL remains authoritative                                        |
 
 Performance budgets **(target)**: REST p95 under 200 ms for reads and under 300 ms for writes; board first render under 2 seconds on a typical connection.
 
@@ -428,12 +428,12 @@ Performance budgets **(target)**: REST p95 under 200 ms for reads and under 300 
 
 ### 13.1 Environments
 
-| Environment | Purpose | Notes |
-| --- | --- | --- |
-| Local | Development | Docker Compose provides PostgreSQL and Redis |
-| CI | Automated test and build | Ephemeral services |
-| Staging | Pre-production verification | Production-like topology, synthetic data |
-| Production | Live traffic | Redundant, monitored, backed up |
+| Environment | Purpose                     | Notes                                        |
+| ----------- | --------------------------- | -------------------------------------------- |
+| Local       | Development                 | Docker Compose provides PostgreSQL and Redis |
+| CI          | Automated test and build    | Ephemeral services                           |
+| Staging     | Pre-production verification | Production-like topology, synthetic data     |
+| Production  | Live traffic                | Redundant, monitored, backed up              |
 
 ### 13.2 Containers
 
@@ -459,13 +459,13 @@ Configuration is supplied through environment variables, validated at startup wi
 
 ## 14. Quality Assurance Strategy
 
-| Level | Scope | Tooling |
-| --- | --- | --- |
-| Unit | Lexorank utilities, services, validators | Test runner of choice **(open)** |
-| Integration | API plus database, queue processors, gateway plus Redis | Ephemeral PostgreSQL and Redis |
-| End to end | Critical journeys, multi-user concurrent sync | Playwright with multiple browser contexts |
-| Security | Authorization matrix, tenant isolation, dependency scanning | Automated tests plus CI scanners |
-| Performance | Gateway fan-out and board load | Load tests against the targets in [section 10](#10-scalability-and-performance) |
+| Level       | Scope                                                       | Tooling                                                                         |
+| ----------- | ----------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| Unit        | Lexorank utilities, services, validators                    | Test runner of choice **(open)**                                                |
+| Integration | API plus database, queue processors, gateway plus Redis     | Ephemeral PostgreSQL and Redis                                                  |
+| End to end  | Critical journeys, multi-user concurrent sync               | Playwright with multiple browser contexts                                       |
+| Security    | Authorization matrix, tenant isolation, dependency scanning | Automated tests plus CI scanners                                                |
+| Performance | Gateway fan-out and board load                              | Load tests against the targets in [section 10](#10-scalability-and-performance) |
 
 Required automated tests include: a negative test for every role/endpoint pair in the RBAC matrix, cross-tenant access attempts, optimistic rollback on failure, and concurrent moves producing a consistent final order.
 
@@ -473,19 +473,19 @@ Required automated tests include: a negative test for every role/endpoint pair i
 
 ## 15. Architecture Decision Records
 
-| ID | Decision | Rationale | Consequence |
-| --- | --- | --- | --- |
-| ADR-001 | Monorepo with Turborepo and pnpm | Shared types, atomic cross-package changes, cached builds | Requires disciplined package boundaries |
-| ADR-002 | Separate API server instead of Next.js route handlers for core logic | The long-lived WebSocket gateway and workers cannot run on serverless route handlers | The Next.js `app/api` layer is limited to a thin backend-for-frontend role |
-| ADR-003 | Lexorank fractional ordering | Single-row writes for moves and no mass re-indexing | Needs rebalancing logic and midpoint utilities |
-| ADR-004 | Socket.io with Redis adapter | Rooms, reconnection, and fallback transports built in; horizontal scaling | Adds Redis as a runtime dependency for the gateway |
-| ADR-005 | BullMQ for asynchronous work | Durable retries and scheduling on infrastructure already in use | Redis durability becomes operationally important |
-| ADR-006 | TanStack Query for server state, Zustand for UI state only | Clear ownership of data; avoids duplicated caches | Contributors must respect the boundary |
-| ADR-007 | Zod schemas as the source of types | One definition for runtime validation and static types | Schemas are part of the public contract and need review |
-| ADR-008 | PostgreSQL as the sole system of record | Strong consistency and transactions for audit integrity | Redis state must always be reconstructible |
-| ADR-009 | Fastify for the API service | Schema-oriented request lifecycle, built-in structured logging with request ids, `inject()` for fast integration tests, and good throughput; Socket.io attaches to its underlying HTTP server | Smaller middleware ecosystem than Express; contributors must use Fastify hooks and plugins rather than Express middleware |
-| ADR-010 | Vitest as the unit and integration test runner | Native ESM and TypeScript, fast watch mode, one runner across all workspaces | Playwright remains separate for end-to-end tests |
-| ADR-011 | 15-minute JWT access tokens with rotating, hashed, family-revoked refresh tokens in an httpOnly cookie | Short exposure window without per-request token lookups, stolen refresh tokens are detected through reuse, and scripts in the page cannot read the refresh token | Access tokens cannot be revoked before expiry; refresh needs a database write; login rate limiting is still to be added |
+| ID      | Decision                                                                                               | Rationale                                                                                                                                                                                     | Consequence                                                                                                               |
+| ------- | ------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| ADR-001 | Monorepo with Turborepo and pnpm                                                                       | Shared types, atomic cross-package changes, cached builds                                                                                                                                     | Requires disciplined package boundaries                                                                                   |
+| ADR-002 | Separate API server instead of Next.js route handlers for core logic                                   | The long-lived WebSocket gateway and workers cannot run on serverless route handlers                                                                                                          | The Next.js `app/api` layer is limited to a thin backend-for-frontend role                                                |
+| ADR-003 | Lexorank fractional ordering                                                                           | Single-row writes for moves and no mass re-indexing                                                                                                                                           | Needs rebalancing logic and midpoint utilities                                                                            |
+| ADR-004 | Socket.io with Redis adapter                                                                           | Rooms, reconnection, and fallback transports built in; horizontal scaling                                                                                                                     | Adds Redis as a runtime dependency for the gateway                                                                        |
+| ADR-005 | BullMQ for asynchronous work                                                                           | Durable retries and scheduling on infrastructure already in use                                                                                                                               | Redis durability becomes operationally important                                                                          |
+| ADR-006 | TanStack Query for server state, Zustand for UI state only                                             | Clear ownership of data; avoids duplicated caches                                                                                                                                             | Contributors must respect the boundary                                                                                    |
+| ADR-007 | Zod schemas as the source of types                                                                     | One definition for runtime validation and static types                                                                                                                                        | Schemas are part of the public contract and need review                                                                   |
+| ADR-008 | PostgreSQL as the sole system of record                                                                | Strong consistency and transactions for audit integrity                                                                                                                                       | Redis state must always be reconstructible                                                                                |
+| ADR-009 | Fastify for the API service                                                                            | Schema-oriented request lifecycle, built-in structured logging with request ids, `inject()` for fast integration tests, and good throughput; Socket.io attaches to its underlying HTTP server | Smaller middleware ecosystem than Express; contributors must use Fastify hooks and plugins rather than Express middleware |
+| ADR-010 | Vitest as the unit and integration test runner                                                         | Native ESM and TypeScript, fast watch mode, one runner across all workspaces                                                                                                                  | Playwright remains separate for end-to-end tests                                                                          |
+| ADR-011 | 15-minute JWT access tokens with rotating, hashed, family-revoked refresh tokens in an httpOnly cookie | Short exposure window without per-request token lookups, stolen refresh tokens are detected through reuse, and scripts in the page cannot read the refresh token                              | Access tokens cannot be revoked before expiry; refresh needs a database write; login rate limiting is still to be added   |
 
 ---
 
@@ -504,11 +504,11 @@ Required automated tests include: a negative test for every role/endpoint pair i
 
 ## 17. Risks
 
-| Risk | Impact | Mitigation |
-| --- | --- | --- |
-| Lexorank key growth after many insertions in the same gap | Longer keys, slower comparisons | Rebalance a column when keys exceed a length threshold |
-| Automation rule cycles | Runaway job amplification | Depth counter, per-workspace rate caps, dead-letter queue |
-| Redis outage | Real-time and queue features unavailable | Graceful degradation, persistence, and alerting |
-| Cross-tenant data exposure through a missed `workspaceId` filter | Severe security incident | Centralized scoped data-access helpers, automated isolation tests, code review checklist |
-| Lock expiry races | Lost edits | Lock TTL renewal, `updatedAt` conflict checks on write |
-| SSRF through user-configured webhooks | Internal network access | Destination validation and private-range blocking |
+| Risk                                                             | Impact                                   | Mitigation                                                                               |
+| ---------------------------------------------------------------- | ---------------------------------------- | ---------------------------------------------------------------------------------------- |
+| Lexorank key growth after many insertions in the same gap        | Longer keys, slower comparisons          | Rebalance a column when keys exceed a length threshold                                   |
+| Automation rule cycles                                           | Runaway job amplification                | Depth counter, per-workspace rate caps, dead-letter queue                                |
+| Redis outage                                                     | Real-time and queue features unavailable | Graceful degradation, persistence, and alerting                                          |
+| Cross-tenant data exposure through a missed `workspaceId` filter | Severe security incident                 | Centralized scoped data-access helpers, automated isolation tests, code review checklist |
+| Lock expiry races                                                | Lost edits                               | Lock TTL renewal, `updatedAt` conflict checks on write                                   |
+| SSRF through user-configured webhooks                            | Internal network access                  | Destination validation and private-range blocking                                        |

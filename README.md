@@ -47,7 +47,7 @@ Designed for teams requiring high-concurrency event processing, multi-tenant wor
 ### Visual Automation Engine (Node Canvas)
 
 - **Node-Based Canvas:** Visual trigger/action builder powered by **React Flow**.
-- **Rule Construction:** Create dynamic rules (e.g., *Trigger: Card moved to "In Review"* → *Action: Reassign to QA Lead + Send Webhook Notification*).
+- **Rule Construction:** Create dynamic rules (e.g., _Trigger: Card moved to "In Review"_ → _Action: Reassign to QA Lead + Send Webhook Notification_).
 - **Asynchronous Queue Engine:** Event-driven rule evaluation using **BullMQ** and **Redis** to execute background triggers without blocking user interaction threads.
 
 ### Universal Command Palette & Accessibility
@@ -100,14 +100,14 @@ All real-time communication flows over Socket.io namespaces and rooms.
 
 ### Event Channels & Actions
 
-| Event Name | Direction | Payload | Description |
-| --- | --- | --- | --- |
-| `room:join` | Client → Server | `{ workspaceId, boardId }` | Subscribe socket connection to board & workspace channels. |
-| `presence:update` | Server → Client | `{ userId, status, cursorPosition, activeCardId }` | Broadcast live user activity across board members. |
-| `card:move` | Client → Server | `{ cardId, targetColumnId, newPosition }` | Dispatch card move event (uses Lexorank index). |
-| `card:updated` | Server → Client | `{ cardId, updatedFields, mutatedBy }` | Broadcast optimistic card updates to other clients. |
-| `field:lock` | Client → Server | `{ cardId, fieldName, isLocked }` | Claim/release visual lock on a specific field during editing. |
-| `automation:triggered` | Server → Client | `{ ruleId, cardId, actionSummary }` | Notify active subscribers when a queue job updates state. |
+| Event Name             | Direction       | Payload                                            | Description                                                   |
+| ---------------------- | --------------- | -------------------------------------------------- | ------------------------------------------------------------- |
+| `room:join`            | Client → Server | `{ workspaceId, boardId }`                         | Subscribe socket connection to board & workspace channels.    |
+| `presence:update`      | Server → Client | `{ userId, status, cursorPosition, activeCardId }` | Broadcast live user activity across board members.            |
+| `card:move`            | Client → Server | `{ cardId, targetColumnId, newPosition }`          | Dispatch card move event (uses Lexorank index).               |
+| `card:updated`         | Server → Client | `{ cardId, updatedFields, mutatedBy }`             | Broadcast optimistic card updates to other clients.           |
+| `field:lock`           | Client → Server | `{ cardId, fieldName, isLocked }`                  | Claim/release visual lock on a specific field during editing. |
+| `automation:triggered` | Server → Client | `{ ruleId, cardId, actionSummary }`                | Notify active subscribers when a queue job updates state.     |
 
 ---
 

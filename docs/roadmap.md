@@ -71,6 +71,7 @@ These apply to all items below and are part of each stage's definition of done:
 **Goal:** A working database, authenticated API, and the application shell.
 
 ### Tooling and workspace setup
+
 - [x] Add TypeScript base config (`strict: true`) and per-package `tsconfig` files with `@/` aliases
 - [x] Configure ESLint and Prettier across the monorepo
 - [x] Wire `dev`, `build`, `lint`, and `test` scripts in each workspace so Turborepo can run them
@@ -78,6 +79,7 @@ These apply to all items below and are part of each stage's definition of done:
 - [x] Add startup environment validation with Zod (fail fast on bad config)
 
 ### Database
+
 - [x] Add Prisma and the generated client to `packages/database`
 - [x] Add `db:push`, `db:migrate`, `db:generate`, and `db:seed` scripts
 - [x] Create the initial migration from `schema.prisma`
@@ -87,11 +89,13 @@ These apply to all items below and are part of each stage's definition of done:
 - [x] Export a shared Prisma client from `packages/database/src`
 
 ### Shared contracts
+
 - [x] Set up `packages/shared-types` with build output consumable by both apps
 - [x] Define Zod schemas and inferred types for auth and workspace DTOs
 - [x] Define the standard error response shape `{ message, code, details? }`
 
 ### API server
+
 - [x] Decide Express or Fastify and record it as an architecture decision
 - [x] Create the server entry point with graceful shutdown
 - [x] Add liveness and readiness endpoints
@@ -107,6 +111,7 @@ These apply to all items below and are part of each stage's definition of done:
 - [x] Write audit entries for role changes within the same transaction
 
 ### Web application
+
 - [x] Initialize Next.js (App Router) with Tailwind and shadcn/ui
 - [ ] Set up the TanStack Query provider and client
 - [ ] Build `(auth)` routes: login, register, invite
@@ -115,6 +120,7 @@ These apply to all items below and are part of each stage's definition of done:
 - [ ] Build the command palette shell (`Cmd+K`) with navigation commands
 
 ### Exit criteria
+
 - [x] A new user can register, create a workspace, and invite a member
 - [x] Negative tests exist for every role and endpoint pair
 - [x] A cross-tenant access attempt is rejected and tested
@@ -127,12 +133,14 @@ These apply to all items below and are part of each stage's definition of done:
 **Goal:** Boards, columns, and cards with ordered drag-and-drop, plus a table view over the same data.
 
 ### Ordering
+
 - [ ] Implement the Lexorank utilities in `apps/web/lib` (midpoint, before, after, first, last)
 - [ ] Implement the matching server-side validation and collision handling
 - [ ] Implement rebalancing for a parent's children when no midpoint exists or keys grow too long
 - [ ] Unit-test boundaries: empty list, single item, adjacent keys, repeated insertion in one gap
 
 ### API
+
 - [ ] CRUD endpoints for boards, columns, and cards, all workspace-scoped
 - [ ] Move endpoint that accepts only the moved item's new `position`
 - [ ] Paginated card queries and a board-load endpoint
@@ -140,6 +148,7 @@ These apply to all items below and are part of each stage's definition of done:
 - [ ] Audit entries written in the same transaction as each mutation
 
 ### Kanban UI
+
 - [ ] Board list and board page (Server Component initial fetch)
 - [ ] Column and card components in `components/kanban/`
 - [ ] Column reordering with `@dnd-kit/sortable`
@@ -150,6 +159,7 @@ These apply to all items below and are part of each stage's definition of done:
 - [ ] Create, rename, and delete flows for boards, columns, and cards
 
 ### Table view
+
 - [ ] Board view toggle between Kanban and table, stored in Zustand
 - [ ] TanStack Table with column visibility toggles
 - [ ] Multi-column sorting
@@ -159,6 +169,7 @@ These apply to all items below and are part of each stage's definition of done:
 - [ ] CSV export
 
 ### Exit criteria
+
 - [ ] A move changes exactly one row in the database
 - [ ] A failed move rolls the UI back to the previous state
 - [ ] Concurrent moves into the same gap resolve to a consistent order
@@ -171,6 +182,7 @@ These apply to all items below and are part of each stage's definition of done:
 **Goal:** Multiple users see each other's changes and activity live, across more than one server instance.
 
 ### Gateway
+
 - [ ] Set up the Socket.io server and decide whether it runs in the API process or separately
 - [ ] JWT authentication in the connection handshake
 - [ ] Implement `room:join` with membership and role verification
@@ -181,6 +193,7 @@ These apply to all items below and are part of each stage's definition of done:
 - [ ] Wire `@socket.io/redis-adapter` and verify cross-instance delivery
 
 ### Events
+
 - [ ] Define payload schemas for all events in `packages/shared-types`
 - [ ] Implement `card:move` with persistence, audit, and broadcast
 - [ ] Broadcast `card:updated` to other clients in the board room
@@ -189,11 +202,13 @@ These apply to all items below and are part of each stage's definition of done:
 - [ ] Implement reconnection recovery: invalidate and refetch board queries
 
 ### Presence and locks
+
 - [ ] Store presence in Redis with heartbeat-refreshed TTLs
 - [ ] Store field locks in Redis with owner and TTL, releasing on disconnect
 - [ ] Throttle cursor updates on the client and keep them ephemeral
 
 ### Client
+
 - [ ] `useSocket`, `useKanban`, and `usePresence` hooks
 - [ ] Online member avatars on the board
 - [ ] Live cursor layer in `components/real-time/`
@@ -202,6 +217,7 @@ These apply to all items below and are part of each stage's definition of done:
 - [ ] Connection status indicator
 
 ### Exit criteria
+
 - [ ] Two clients on different gateway instances see each other's moves
 - [ ] A crashed client's presence and locks expire automatically
 - [ ] No event reaches a socket outside its authorized rooms, with a test proving it
@@ -214,6 +230,7 @@ These apply to all items below and are part of each stage's definition of done:
 **Goal:** Rich card detail, comments, attachments, tags, and workspace-defined custom fields.
 
 ### Card detail
+
 - [ ] Slide-over `Sheet` for card detail
 - [ ] Description editing with sanitized rich text
 - [ ] Comment thread: create, list, and delete
@@ -222,17 +239,20 @@ These apply to all items below and are part of each stage's definition of done:
 - [ ] Per-card activity feed from `ActivityLog`
 
 ### Attachments backend
+
 - [ ] Choose the storage backend and record the decision
 - [ ] Signed upload and download URLs
 - [ ] Enforce type and size limits
 - [ ] Clean up stored files when attachments or cards are deleted
 
 ### Tags
+
 - [ ] Workspace-scoped tag CRUD
 - [ ] Apply and remove tags on cards
 - [ ] Enforce that a tag and card share a workspace
 
 ### Custom fields
+
 - [ ] Field-definition CRUD in workspace settings
 - [ ] Field type registry: one handler per `CustomFieldType` for validation, storage, and rendering
 - [ ] Support `TEXT`, `NUMBER`, `SELECT`, `MULTI_SELECT`, `DATE`, `CHECKBOX`, and `USER`
@@ -242,10 +262,12 @@ These apply to all items below and are part of each stage's definition of done:
 - [ ] Field builder UI in `settings/`
 
 ### Optimistic updates
+
 - [ ] Apply the optimistic pattern with rollback to comments, checklists, tags, and field edits
 - [ ] Reconcile real-time `card:updated` events with in-flight optimistic changes
 
 ### Exit criteria
+
 - [ ] Adding a new field type requires adding a handler, not editing existing branching code
 - [ ] Invalid field values are rejected server-side with a typed error
 - [ ] Cross-workspace tag and field references are rejected and tested
@@ -257,6 +279,7 @@ These apply to all items below and are part of each stage's definition of done:
 **Goal:** Users build trigger and action rules visually, and workers execute them reliably.
 
 ### Queue infrastructure
+
 - [ ] Set up BullMQ queues and a worker process type
 - [ ] Deterministic job IDs for idempotency
 - [ ] Retry with exponential backoff and a bounded attempt count
@@ -265,6 +288,7 @@ These apply to all items below and are part of each stage's definition of done:
 - [ ] Worker graceful shutdown
 
 ### Rule engine
+
 - [ ] Rule CRUD endpoints, restricted to `ADMIN` and above
 - [ ] Trigger registry: `CARD_CREATED`, `CARD_MOVED`, `DUE_DATE_APPROACHING`
 - [ ] Action registry: `REASSIGN`, `CHANGE_PRIORITY`, `SEND_WEBHOOK`
@@ -276,15 +300,18 @@ These apply to all items below and are part of each stage's definition of done:
 - [ ] Record each automation action in `ActivityLog` with the rule in `details`
 
 ### Webhooks
+
 - [ ] Short timeouts and bounded retries
 - [ ] Block private and link-local destinations
 - [ ] Signed payloads so receivers can verify origin
 
 ### Notifications
+
 - [ ] Publish `automation:triggered` to the board room after a rule runs
 - [ ] Notification email job
 
 ### Visual builder
+
 - [ ] React Flow canvas in `components/canvas/`
 - [ ] Trigger and action node types with configuration forms
 - [ ] Connect nodes and validate that the graph is a legal rule
@@ -292,6 +319,7 @@ These apply to all items below and are part of each stage's definition of done:
 - [ ] Show recent execution history per rule
 
 ### Exit criteria
+
 - [ ] Moving a card to a column fires the matching rule exactly once, even on retry
 - [ ] A rule cycle is stopped by loop protection and logged
 - [ ] A failing webhook does not delay unrelated jobs
@@ -304,6 +332,7 @@ These apply to all items below and are part of each stage's definition of done:
 **Goal:** A production-ready, accessible, observable, and deployable system.
 
 ### Accessibility
+
 - [ ] Keyboard navigation for the board, drag handles, and table grid
 - [ ] ARIA roles, labels, and live regions for drag-and-drop and real-time updates
 - [ ] Focus management in dialogs, sheets, and the command palette
@@ -312,6 +341,7 @@ These apply to all items below and are part of each stage's definition of done:
 - [ ] Automated accessibility checks in CI
 
 ### Performance
+
 - [ ] Define performance budgets from the TAD targets
 - [ ] Load test the gateway's fan-out and board load
 - [ ] Add list virtualization for large boards
@@ -319,6 +349,7 @@ These apply to all items below and are part of each stage's definition of done:
 - [ ] Bundle analysis and code splitting
 
 ### Testing
+
 - [ ] Playwright end-to-end tests for the critical user journeys
 - [ ] Multi-user concurrent sync tests using multiple browser contexts
 - [ ] Complete the RBAC matrix test suite
@@ -326,11 +357,13 @@ These apply to all items below and are part of each stage's definition of done:
 - [ ] Dependency and container vulnerability scanning in CI
 
 ### Observability
+
 - [ ] Structured logs with correlation IDs across HTTP, socket, and queue
 - [ ] Metrics for requests, sockets, event throughput, and queue health
 - [ ] Alerts for latency, errors, backlog growth, and dead-letter arrivals
 
 ### Deployment
+
 - [ ] Dockerfiles for `web`, `api-server`, and `worker`
 - [ ] Choose the hosting platform and record the decision
 - [ ] CI pipeline: install, lint, type-check, test, build, scan, publish
@@ -341,12 +374,14 @@ These apply to all items below and are part of each stage's definition of done:
 - [ ] Production secrets management
 
 ### Documentation
+
 - [ ] Update the TAD and database design doc to match what was built
 - [ ] Resolve or re-assign every open question in the TAD
 - [ ] Operations runbook: deploy, rollback, backup restore, incident response
 - [ ] Add the `LICENSE` file referenced by the README
 
 ### Exit criteria
+
 - [ ] End-to-end suite passes in CI on every merge
 - [ ] Performance budgets are met under load test
 - [ ] A staging deploy and a rollback have both been rehearsed
