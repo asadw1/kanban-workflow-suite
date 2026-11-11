@@ -10,8 +10,22 @@ updates:
       # One PR for all minor/patch bumps; majors arrive individually for deliberate review.
       minor-and-patch:
         update-types: [minor, patch]
+    ignore:
+      # Prisma 7 is a migration (new client generator and config), so it is scheduled work,
+      # not a drive-by bump. Revisit deliberately and remove this rule when ready.
+      - dependency-name: prisma
+        update-types: [version-update:semver-major]
+      - dependency-name: "@prisma/client"
+        update-types: [version-update:semver-major]
+      # The Next ESLint plugin must track the installed Next.js major, so it moves with Next.
+      - dependency-name: "@next/eslint-plugin-next"
+        update-types: [version-update:semver-major]
 
   - package-ecosystem: github-actions
     directory: /
     schedule:
       interval: weekly
+    groups:
+      # All action bumps in a single PR instead of one per action.
+      actions:
+        patterns: ["*"]
