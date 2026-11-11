@@ -17,6 +17,18 @@ updates:
         update-types: [version-update:semver-major]
       - dependency-name: "@prisma/client"
         update-types: [version-update:semver-major]
+      # Node typings must match the Node runtime we target (20), not the newest Node major.
+      - dependency-name: "@types/node"
+        update-types: [version-update:semver-major]
+      # Test runner majors move together with the coverage provider and need their own
+      # migration, and TypeScript majors must wait for typescript-eslint support. Revisit
+      # deliberately and remove these rules when scheduled.
+      - dependency-name: vitest
+        update-types: [version-update:semver-major]
+      - dependency-name: "@vitest/coverage-v8"
+        update-types: [version-update:semver-major]
+      - dependency-name: typescript
+        update-types: [version-update:semver-major]
       # The Next ESLint plugin must track the installed Next.js major, so it moves with Next.
       - dependency-name: "@next/eslint-plugin-next"
         update-types: [version-update:semver-major]
